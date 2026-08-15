@@ -7,6 +7,7 @@ using Rivo.Application.StockMovements.Interfaces;
 using Rivo.Domain.Entities.StockMovements;
 using Rivo.Domain.Exceptions;
 using StockEntity = Rivo.Domain.Entities.Stock.Stock;
+using WarehouseEntity = Rivo.Domain.Entities.Warehouses.Warehouse;
 
 namespace Rivo.Application.StockMovements.Services;
 
@@ -51,6 +52,12 @@ public class StockMovementsService : IStockMovementsService
 
     public async Task<StockMovementDto> CreateAsync(CreateStockMovementDto dto, CancellationToken cancellationToken = default)
     {
+        var warehouseExists = await _context.Warehouses.AnyAsync(x => x.Id == dto.WarehouseId, cancellationToken);
+        if (!warehouseExists)
+        {
+            throw new NotFoundException(nameof(WarehouseEntity), dto.WarehouseId);
+        }
+
         var stock = await _context.Stocks.FirstOrDefaultAsync(
             x => x.WarehouseId == dto.WarehouseId && x.ProductId == dto.ProductId && x.ProductVariationId == dto.ProductVariationId,
             cancellationToken);
