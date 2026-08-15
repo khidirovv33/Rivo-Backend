@@ -1,6 +1,7 @@
 using AutoMapper;
 using Rivo.Application.Common.Interfaces;
 using Rivo.Application.Loyalty.Interfaces;
+using Rivo.Application.Loyalty.Dtos;
 using Rivo.Application.Orders.Dtos;
 using Rivo.Application.Orders.Interfaces;
 using Rivo.Application.Payments.Interfaces;
@@ -27,6 +28,7 @@ public class PosService : IPosService
     private readonly ILoyaltyService _loyaltyService;
     private readonly IApplicationDbContext _dbContext;
     private readonly IPdfExportService _pdfExportService;
+    private readonly IEmailService _emailService;
     private readonly IMapper _mapper;
 
     public PosService(
@@ -39,6 +41,7 @@ public class PosService : IPosService
         ILoyaltyService loyaltyService,
         IApplicationDbContext dbContext,
         IPdfExportService pdfExportService,
+        IEmailService emailService,
         IMapper mapper)
     {
         _productsRepository = productsRepository;
@@ -50,6 +53,7 @@ public class PosService : IPosService
         _loyaltyService = loyaltyService;
         _dbContext = dbContext;
         _pdfExportService = pdfExportService;
+        _emailService = emailService;
         _mapper = mapper;
     }
 
@@ -142,6 +146,16 @@ public class PosService : IPosService
             stockDecrements.Add((product.Id, itemRequest.ProductVariationId, itemRequest.Quantity));
         }
 
+        if (request.CustomerId.HasValue)
+        {
+            var loyaltyCard = await _loyaltyService.GetCardByCustomerAsync(tenantId, request.CustomerId.Value, cancellationToken);
+            if (loyaltyCard is not null && loyaltyCard.LoyaltyLevelDiscountPercentage > 0)
+            {
+                var loyaltyDiscount = Math.Round(subTotal * loyaltyCard.LoyaltyLevelDiscountPercentage / 100m, 2);
+                discountTotal += loyaltyDiscount;
+            }
+        }
+
         order.SubTotal = subTotal;
         order.DiscountAmount = discountTotal;
         order.TaxAmount = taxTotal;
@@ -203,5 +217,20 @@ public class PosService : IPosService
         var orderDto = _mapper.Map<OrderDto>(order);
 
         return _pdfExportService.GenerateReceiptPdf(orderDto, store?.Name ?? "Rivo", order.Customer?.FullName);
+    }
+
+    public async Task SendReceiptByEmailAsync(Guid tenantId, Guid orderId, string toEmail, CancellationToken cancellationToken = default)
+    {
+        var order = await _ordersRepository.GetByIdAsync(orderId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Order), orderId);
+        if (order.TenantId != tenantId)
+        {
+            throw new TenantMismatchException();
+        }
+
+        var pdfBytes = await GenerateReceiptPdfAsync(tenantId, orderId, cancellationToken);
+        var recipientName = order.Customer?.FullName ?? "Клиент";
+
+        await _emailService.SendReceiptAsync(toEmail, recipientName, pdfBytes, order.OrderNumber, cancellationToken);
     }
 }

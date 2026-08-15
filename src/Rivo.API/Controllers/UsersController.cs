@@ -15,6 +15,20 @@ public class UsersController : ApiControllerBase
         _usersService = usersService;
     }
 
+    [HttpGet("me")]
+    public async Task<ActionResult<ApiResponse<UserDto>>> GetMyProfile(CancellationToken cancellationToken)
+    {
+        var result = await _usersService.GetByIdAsync(TenantId, CurrentUserId, cancellationToken);
+        return Ok(ApiResponse<UserDto>.Ok(result));
+    }
+
+    [HttpPatch("me")]
+    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateMyProfile(UpdateOwnProfileRequestDto request, CancellationToken cancellationToken)
+    {
+        var result = await _usersService.UpdateOwnProfileAsync(TenantId, CurrentUserId, request, cancellationToken);
+        return Ok(ApiResponse<UserDto>.Ok(result));
+    }
+
     [PermissionAuthorize("Users.Read")]
     [HttpGet]
     public async Task<ActionResult<ApiResponse<PaginatedList<UserDto>>>> GetPaged([FromQuery] PagedRequest request, CancellationToken cancellationToken)

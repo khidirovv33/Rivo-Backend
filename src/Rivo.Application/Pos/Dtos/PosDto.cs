@@ -19,3 +19,8 @@ public class CheckoutRequestDto
     public List<CheckoutItemRequestDto> Items { get; set; } = new();
     public List<CreatePaymentRequestDto> Payments { get; set; } = new();
 }
+
+public class SendReceiptRequestDto
+{
+    public string Email { get; set; } = string.Empty;
+}

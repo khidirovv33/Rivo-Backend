@@ -3,6 +3,14 @@ using Rivo.Application.Pos.Dtos;
 
 namespace Rivo.Application.Pos.Validators;
 
+public class SendReceiptRequestValidator : AbstractValidator<SendReceiptRequestDto>
+{
+    public SendReceiptRequestValidator()
+    {
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+    }
+}
+
 public class CheckoutRequestValidator : AbstractValidator<CheckoutRequestDto>
 {
     public CheckoutRequestValidator()

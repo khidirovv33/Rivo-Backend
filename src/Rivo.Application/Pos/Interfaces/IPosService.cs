@@ -9,4 +9,6 @@ public interface IPosService
     Task<OrderDto> CheckoutAsync(Guid tenantId, Guid cashierUserId, CheckoutRequestDto request, CancellationToken cancellationToken = default);
 
     Task<byte[]> GenerateReceiptPdfAsync(Guid tenantId, Guid orderId, CancellationToken cancellationToken = default);
+
+    Task SendReceiptByEmailAsync(Guid tenantId, Guid orderId, string toEmail, CancellationToken cancellationToken = default);
 }

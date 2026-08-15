@@ -23,3 +23,11 @@ public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequestDto
         RuleFor(x => x.Status).IsInEnum();
     }
 }
+
+public class UpdateOwnProfileRequestValidator : AbstractValidator<UpdateOwnProfileRequestDto>
+{
+    public UpdateOwnProfileRequestValidator()
+    {
+        RuleFor(x => x.FullName).NotEmpty().MaximumLength(200);
+    }
+}

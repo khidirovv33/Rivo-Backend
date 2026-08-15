@@ -97,6 +97,20 @@ public class UsersService : IUsersService
         return await GetByIdAsync(tenantId, user.Id, cancellationToken);
     }
 
+    public async Task<UserDto> UpdateOwnProfileAsync(Guid tenantId, Guid userId, UpdateOwnProfileRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var user = await GetTenantUserOrThrowAsync(tenantId, userId, cancellationToken);
+
+        user.FullName = request.FullName;
+        user.PhoneNumber = request.PhoneNumber;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        _usersRepository.Update(user);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return await GetByIdAsync(tenantId, user.Id, cancellationToken);
+    }
+
     public async Task BlockAsync(Guid tenantId, Guid id, CancellationToken cancellationToken = default)
     {
         var user = await GetTenantUserOrThrowAsync(tenantId, id, cancellationToken);

@@ -31,4 +31,12 @@ public class PosController : ApiControllerBase
         var pdfBytes = await _posService.GenerateReceiptPdfAsync(TenantId, orderId, cancellationToken);
         return File(pdfBytes, "application/pdf", $"receipt-{orderId}.pdf");
     }
+
+    [PermissionAuthorize("Sales.Read")]
+    [HttpPost("receipts/{orderId:guid}/email")]
+    public async Task<ActionResult<ApiResponse<object>>> EmailReceipt(Guid orderId, SendReceiptRequestDto request, CancellationToken cancellationToken)
+    {
+        await _posService.SendReceiptByEmailAsync(TenantId, orderId, request.Email, cancellationToken);
+        return Ok(ApiResponse<object>.Ok(new { }, "Receipt emailed."));
+    }
 }

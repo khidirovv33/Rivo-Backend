@@ -9,6 +9,7 @@ public interface IUsersService
     Task<PaginatedList<UserDto>> GetPagedAsync(Guid tenantId, PagedRequest request, CancellationToken cancellationToken = default);
     Task<UserDto> CreateAsync(Guid tenantId, CreateUserRequestDto request, Guid createdBy, CancellationToken cancellationToken = default);
     Task<UserDto> UpdateAsync(Guid tenantId, Guid id, UpdateUserRequestDto request, Guid updatedBy, CancellationToken cancellationToken = default);
+    Task<UserDto> UpdateOwnProfileAsync(Guid tenantId, Guid userId, UpdateOwnProfileRequestDto request, CancellationToken cancellationToken = default);
     Task BlockAsync(Guid tenantId, Guid id, CancellationToken cancellationToken = default);
     Task UnblockAsync(Guid tenantId, Guid id, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid tenantId, Guid id, CancellationToken cancellationToken = default);

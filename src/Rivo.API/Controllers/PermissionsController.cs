@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Rivo.API.Filters;
 using Rivo.Application.Common.Models;
 using Rivo.Application.Permissions.Dtos;
 using Rivo.Application.Permissions.Interfaces;
@@ -14,6 +15,9 @@ public class PermissionsController : ApiControllerBase
         _permissionsService = permissionsService;
     }
 
+    // Permissions are only ever viewed alongside role assignment, so this rides on Roles.Read
+    // rather than a dedicated Permissions.* entry in the catalog.
+    [PermissionAuthorize("Roles.Read")]
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<PermissionDto>>>> GetAll(CancellationToken cancellationToken)
     {
