@@ -7,10 +7,18 @@ using Microsoft.IdentityModel.Tokens;
 using Rivo.Application.Audit.Interfaces;
 using Rivo.Application.Audit.Services;
 using Rivo.Application.Common.Interfaces;
+using Rivo.Application.Purchases.Interfaces;
+using Rivo.Application.Purchases.Services;
+using Rivo.Application.PurchaseOrders.Interfaces;
+using Rivo.Application.PurchaseOrders.Services;
+using Rivo.Application.Receiving.Interfaces;
+using Rivo.Application.Receiving.Services;
 using Rivo.Application.Stock.Interfaces;
 using Rivo.Application.Stock.Services;
 using Rivo.Application.StockMovements.Interfaces;
 using Rivo.Application.StockMovements.Services;
+using Rivo.Application.Suppliers.Interfaces;
+using Rivo.Application.Suppliers.Services;
 using Rivo.Application.Warehouses.Interfaces;
 using Rivo.Application.Warehouses.Services;
 using Rivo.Infrastructure.Common;
@@ -40,6 +48,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IWarehousesService, WarehousesService>();
         services.AddScoped<IStockService, StockService>();
         services.AddScoped<IStockMovementsService, StockMovementsService>();
+        services.AddScoped<ISuppliersService, SuppliersService>();
+        services.AddScoped<IPurchaseOrdersService, PurchaseOrdersService>();
+        services.AddScoped<IReceivingService, ReceivingService>();
+        services.AddScoped<IPurchasesService, PurchasesService>();
 
         var jwtSection = configuration.GetSection("Jwt");
         services.AddAuthentication(options =>

@@ -1,9 +1,16 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Rivo.Application.Common.Interfaces;
 using Rivo.Domain.Common;
 using Rivo.Domain.Entities.Audit;
+using Rivo.Domain.Entities.PurchaseOrders;
+using Rivo.Domain.Entities.Purchases;
 using Rivo.Domain.Entities.StockMovements;
+using Rivo.Domain.Entities.Suppliers;
 using Rivo.Domain.Entities.Warehouses;
+using ReceivingEntity = Rivo.Domain.Entities.Receiving.Receiving;
+using ReceivingItemEntity = Rivo.Domain.Entities.Receiving.ReceivingItem;
 using StockEntity = Rivo.Domain.Entities.Stock.Stock;
 
 namespace Rivo.Infrastructure.Persistence;
@@ -31,18 +38,52 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
 
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
+
+    public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
+
+    public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
+
+    public DbSet<ReceivingEntity> Receivings => Set<ReceivingEntity>();
+
+    public DbSet<ReceivingItemEntity> ReceivingItems => Set<ReceivingItemEntity>();
+
+    public DbSet<Purchase> Purchases => Set<Purchase>();
+
+    /// <summary>Читается свежо при каждой компиляции запроса — DbContext per-request, значение не устаревает.</summary>
+    private Guid CurrentTenantId => _currentTenant.TenantId ?? Guid.Empty;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
-            if (typeof(ITenantEntity).IsAssignableFrom(entityType.ClrType))
+            var clrType = entityType.ClrType;
+
+            if (typeof(ITenantEntity).IsAssignableFrom(clrType))
             {
-                modelBuilder.Entity(entityType.ClrType)
-                    .HasIndex(nameof(ITenantEntity.TenantId));
+                modelBuilder.Entity(clrType).HasIndex(nameof(ITenantEntity.TenantId));
+                ApplyTenantQueryFilter(modelBuilder, entityType);
             }
         }
+    }
+
+    /// <summary>
+    /// Изоляция данных между tenant'ами (раздел 27 ТЗ). Именованный фильтр (EF Core 10) —
+    /// комбинируется через AND с любым другим именованным фильтром на этой же entity
+    /// (например "SoftDelete" в WarehouseConfiguration), не перезаписывая его.
+    /// </summary>
+    private void ApplyTenantQueryFilter(ModelBuilder modelBuilder, IMutableEntityType entityType)
+    {
+        var clrType = entityType.ClrType;
+        var parameter = Expression.Parameter(clrType, "e");
+
+        var tenantCheck = Expression.Equal(
+            Expression.Property(parameter, nameof(ITenantEntity.TenantId)),
+            Expression.Property(Expression.Constant(this), nameof(CurrentTenantId)));
+
+        modelBuilder.Entity(clrType).HasQueryFilter("TenantIsolation", Expression.Lambda(tenantCheck, parameter));
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

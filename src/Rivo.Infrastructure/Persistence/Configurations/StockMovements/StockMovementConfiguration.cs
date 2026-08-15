@@ -27,6 +27,6 @@ public class StockMovementConfiguration : IEntityTypeConfiguration<StockMovement
         builder.HasIndex(x => new { x.ReferenceType, x.ReferenceId });
 
         // Зеркалим soft-delete фильтр родителя (Warehouse) — см. StockConfiguration.
-        builder.HasQueryFilter(x => !x.Warehouse.IsDeleted);
+        builder.HasQueryFilter("ParentSoftDelete", x => !x.Warehouse.IsDeleted);
     }
 }

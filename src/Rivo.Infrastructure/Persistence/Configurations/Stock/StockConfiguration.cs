@@ -21,6 +21,6 @@ public class StockConfiguration : IEntityTypeConfiguration<StockEntity>
 
         // Зеркалим soft-delete фильтр родителя (Warehouse), иначе EF предупреждает о рассинхроне
         // required-навигации с global query filter.
-        builder.HasQueryFilter(x => !x.Warehouse.IsDeleted);
+        builder.HasQueryFilter("ParentSoftDelete", x => !x.Warehouse.IsDeleted);
     }
 }

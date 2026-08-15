@@ -1,7 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Rivo.Domain.Entities.Audit;
+using Rivo.Domain.Entities.PurchaseOrders;
+using Rivo.Domain.Entities.Purchases;
 using Rivo.Domain.Entities.StockMovements;
+using Rivo.Domain.Entities.Suppliers;
 using Rivo.Domain.Entities.Warehouses;
+using ReceivingEntity = Rivo.Domain.Entities.Receiving.Receiving;
 using StockEntity = Rivo.Domain.Entities.Stock.Stock;
 
 namespace Rivo.Application.Common.Interfaces;
@@ -20,6 +24,18 @@ public interface IApplicationDbContext
     DbSet<StockEntity> Stocks { get; }
 
     DbSet<StockMovement> StockMovements { get; }
+
+    DbSet<Supplier> Suppliers { get; }
+
+    DbSet<PurchaseOrder> PurchaseOrders { get; }
+
+    DbSet<PurchaseOrderItem> PurchaseOrderItems { get; }
+
+    DbSet<ReceivingEntity> Receivings { get; }
+
+    DbSet<Domain.Entities.Receiving.ReceivingItem> ReceivingItems { get; }
+
+    DbSet<Purchase> Purchases { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
