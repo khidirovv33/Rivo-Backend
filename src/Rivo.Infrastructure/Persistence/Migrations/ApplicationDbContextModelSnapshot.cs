@@ -473,6 +473,95 @@ namespace Rivo.Infrastructure.Persistence.Migrations
                     b.ToTable("Suppliers", (string)null);
                 });
 
+            modelBuilder.Entity("Rivo.Domain.Entities.Transfers.Transfer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DestinationWarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("SourceWarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("TransferDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TransferNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "TransferNumber")
+                        .IsUnique();
+
+                    b.ToTable("Transfers", (string)null);
+                });
+
+            modelBuilder.Entity("Rivo.Domain.Entities.Transfers.TransferItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ProductVariationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TransferId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TransferId");
+
+                    b.ToTable("TransferItems", (string)null);
+                });
+
             modelBuilder.Entity("Rivo.Domain.Entities.Warehouses.Warehouse", b =>
                 {
                     b.Property<Guid>("Id")
@@ -560,12 +649,28 @@ namespace Rivo.Infrastructure.Persistence.Migrations
                     b.Navigation("Warehouse");
                 });
 
+            modelBuilder.Entity("Rivo.Domain.Entities.Transfers.TransferItem", b =>
+                {
+                    b.HasOne("Rivo.Domain.Entities.Transfers.Transfer", "Transfer")
+                        .WithMany("Items")
+                        .HasForeignKey("TransferId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Transfer");
+                });
+
             modelBuilder.Entity("Rivo.Domain.Entities.PurchaseOrders.PurchaseOrder", b =>
                 {
                     b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Rivo.Domain.Entities.Receiving.Receiving", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Rivo.Domain.Entities.Transfers.Transfer", b =>
                 {
                     b.Navigation("Items");
                 });

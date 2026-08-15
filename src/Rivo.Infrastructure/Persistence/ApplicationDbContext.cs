@@ -8,6 +8,7 @@ using Rivo.Domain.Entities.PurchaseOrders;
 using Rivo.Domain.Entities.Purchases;
 using Rivo.Domain.Entities.StockMovements;
 using Rivo.Domain.Entities.Suppliers;
+using Rivo.Domain.Entities.Transfers;
 using Rivo.Domain.Entities.Warehouses;
 using ReceivingEntity = Rivo.Domain.Entities.Receiving.Receiving;
 using ReceivingItemEntity = Rivo.Domain.Entities.Receiving.ReceivingItem;
@@ -49,6 +50,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<ReceivingItemEntity> ReceivingItems => Set<ReceivingItemEntity>();
 
     public DbSet<Purchase> Purchases => Set<Purchase>();
+
+    public DbSet<Transfer> Transfers => Set<Transfer>();
+
+    public DbSet<TransferItem> TransferItems => Set<TransferItem>();
 
     /// <summary>Читается свежо при каждой компиляции запроса — DbContext per-request, значение не устаревает.</summary>
     private Guid CurrentTenantId => _currentTenant.TenantId ?? Guid.Empty;

@@ -19,6 +19,8 @@ using Rivo.Application.StockMovements.Interfaces;
 using Rivo.Application.StockMovements.Services;
 using Rivo.Application.Suppliers.Interfaces;
 using Rivo.Application.Suppliers.Services;
+using Rivo.Application.Transfers.Interfaces;
+using Rivo.Application.Transfers.Services;
 using Rivo.Application.Warehouses.Interfaces;
 using Rivo.Application.Warehouses.Services;
 using Rivo.Infrastructure.Common;
@@ -52,6 +54,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPurchaseOrdersService, PurchaseOrdersService>();
         services.AddScoped<IReceivingService, ReceivingService>();
         services.AddScoped<IPurchasesService, PurchasesService>();
+        services.AddScoped<ITransfersService, TransfersService>();
 
         var jwtSection = configuration.GetSection("Jwt");
         services.AddAuthentication(options =>

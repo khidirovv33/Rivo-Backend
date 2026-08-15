@@ -4,6 +4,7 @@ using Rivo.Domain.Entities.PurchaseOrders;
 using Rivo.Domain.Entities.Purchases;
 using Rivo.Domain.Entities.StockMovements;
 using Rivo.Domain.Entities.Suppliers;
+using Rivo.Domain.Entities.Transfers;
 using Rivo.Domain.Entities.Warehouses;
 using ReceivingEntity = Rivo.Domain.Entities.Receiving.Receiving;
 using StockEntity = Rivo.Domain.Entities.Stock.Stock;
@@ -36,6 +37,10 @@ public interface IApplicationDbContext
     DbSet<Domain.Entities.Receiving.ReceivingItem> ReceivingItems { get; }
 
     DbSet<Purchase> Purchases { get; }
+
+    DbSet<Transfer> Transfers { get; }
+
+    DbSet<TransferItem> TransferItems { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
