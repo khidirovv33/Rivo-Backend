@@ -116,6 +116,113 @@ namespace Rivo.Infrastructure.Persistence.Migrations
                     b.ToTable("Barcodes", (string)null);
                 });
 
+            modelBuilder.Entity("Rivo.Domain.Entities.Inventories.Inventory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("InventoryNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("ResponsibleUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "InventoryNumber")
+                        .IsUnique();
+
+                    b.ToTable("Inventories", (string)null);
+                });
+
+            modelBuilder.Entity("Rivo.Domain.Entities.InventoryItems.InventoryItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("ActualQuantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("InventoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ProductVariationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("SystemQuantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("InventoryId", "ProductId", "ProductVariationId")
+                        .IsUnique();
+
+                    b.ToTable("InventoryItems", (string)null);
+                });
+
             modelBuilder.Entity("Rivo.Domain.Entities.PurchaseOrders.PurchaseOrder", b =>
                 {
                     b.Property<Guid>("Id")
@@ -649,6 +756,17 @@ namespace Rivo.Infrastructure.Persistence.Migrations
                     b.ToTable("Warehouses", (string)null);
                 });
 
+            modelBuilder.Entity("Rivo.Domain.Entities.InventoryItems.InventoryItem", b =>
+                {
+                    b.HasOne("Rivo.Domain.Entities.Inventories.Inventory", "Inventory")
+                        .WithMany("Items")
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Inventory");
+                });
+
             modelBuilder.Entity("Rivo.Domain.Entities.PurchaseOrders.PurchaseOrderItem", b =>
                 {
                     b.HasOne("Rivo.Domain.Entities.PurchaseOrders.PurchaseOrder", "PurchaseOrder")
@@ -702,6 +820,11 @@ namespace Rivo.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Transfer");
+                });
+
+            modelBuilder.Entity("Rivo.Domain.Entities.Inventories.Inventory", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Rivo.Domain.Entities.PurchaseOrders.PurchaseOrder", b =>

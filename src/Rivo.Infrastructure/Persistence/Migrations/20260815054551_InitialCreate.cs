@@ -52,6 +52,31 @@ namespace Rivo.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Inventories",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    WarehouseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    InventoryNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    ResponsibleUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ApprovedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ApprovedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Inventories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PurchaseOrders",
                 columns: table => new
                 {
@@ -179,6 +204,32 @@ namespace Rivo.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Warehouses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InventoryItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    InventoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductVariationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    SystemQuantity = table.Column<decimal>(type: "numeric(18,3)", precision: 18, scale: 3, nullable: false),
+                    ActualQuantity = table.Column<decimal>(type: "numeric(18,3)", precision: 18, scale: 3, nullable: false),
+                    UnitCost = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InventoryItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InventoryItems_Inventories_InventoryId",
+                        column: x => x.InventoryId,
+                        principalTable: "Inventories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -336,6 +387,28 @@ namespace Rivo.Infrastructure.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Inventories_TenantId",
+                table: "Inventories",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Inventories_TenantId_InventoryNumber",
+                table: "Inventories",
+                columns: new[] { "TenantId", "InventoryNumber" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InventoryItems_InventoryId_ProductId_ProductVariationId",
+                table: "InventoryItems",
+                columns: new[] { "InventoryId", "ProductId", "ProductVariationId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InventoryItems_TenantId",
+                table: "InventoryItems",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PurchaseOrderItems_PurchaseOrderId",
                 table: "PurchaseOrderItems",
                 column: "PurchaseOrderId");
@@ -449,6 +522,9 @@ namespace Rivo.Infrastructure.Persistence.Migrations
                 name: "Barcodes");
 
             migrationBuilder.DropTable(
+                name: "InventoryItems");
+
+            migrationBuilder.DropTable(
                 name: "PurchaseOrderItems");
 
             migrationBuilder.DropTable(
@@ -468,6 +544,9 @@ namespace Rivo.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "TransferItems");
+
+            migrationBuilder.DropTable(
+                name: "Inventories");
 
             migrationBuilder.DropTable(
                 name: "PurchaseOrders");

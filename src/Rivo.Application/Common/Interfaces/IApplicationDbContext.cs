@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Rivo.Domain.Entities.Audit;
 using Rivo.Domain.Entities.Barcodes;
+using Rivo.Domain.Entities.Inventories;
+using Rivo.Domain.Entities.InventoryItems;
 using Rivo.Domain.Entities.PurchaseOrders;
 using Rivo.Domain.Entities.Purchases;
 using Rivo.Domain.Entities.StockMovements;
@@ -44,6 +46,10 @@ public interface IApplicationDbContext
     DbSet<TransferItem> TransferItems { get; }
 
     DbSet<Barcode> Barcodes { get; }
+
+    DbSet<Inventory> Inventories { get; }
+
+    DbSet<InventoryItem> InventoryItems { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

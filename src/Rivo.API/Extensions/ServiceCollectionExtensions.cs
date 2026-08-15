@@ -9,6 +9,10 @@ using Rivo.Application.Audit.Services;
 using Rivo.Application.Barcodes.Interfaces;
 using Rivo.Application.Barcodes.Services;
 using Rivo.Application.Common.Interfaces;
+using Rivo.Application.Inventories.Interfaces;
+using Rivo.Application.Inventories.Services;
+using Rivo.Application.InventoryItems.Interfaces;
+using Rivo.Application.InventoryItems.Services;
 using Rivo.Application.Purchases.Interfaces;
 using Rivo.Application.Purchases.Services;
 using Rivo.Application.PurchaseOrders.Interfaces;
@@ -61,6 +65,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBarcodesService, BarcodesService>();
         services.AddSingleton<IBarcodeValueGenerator, BarcodeGeneratorService>();
         services.AddSingleton<IBarcodeImageRenderer, BarcodeGeneratorService>();
+        services.AddScoped<IInventoriesService, InventoriesService>();
+        services.AddScoped<IInventoryItemsService, InventoryItemsService>();
 
         var jwtSection = configuration.GetSection("Jwt");
         services.AddAuthentication(options =>

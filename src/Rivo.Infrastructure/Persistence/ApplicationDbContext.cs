@@ -5,6 +5,8 @@ using Rivo.Application.Common.Interfaces;
 using Rivo.Domain.Common;
 using Rivo.Domain.Entities.Audit;
 using Rivo.Domain.Entities.Barcodes;
+using Rivo.Domain.Entities.Inventories;
+using Rivo.Domain.Entities.InventoryItems;
 using Rivo.Domain.Entities.PurchaseOrders;
 using Rivo.Domain.Entities.Purchases;
 using Rivo.Domain.Entities.StockMovements;
@@ -57,6 +59,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<TransferItem> TransferItems => Set<TransferItem>();
 
     public DbSet<Barcode> Barcodes => Set<Barcode>();
+
+    public DbSet<Inventory> Inventories => Set<Inventory>();
+
+    public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
 
     /// <summary>Читается свежо при каждой компиляции запроса — DbContext per-request, значение не устаревает.</summary>
     private Guid CurrentTenantId => _currentTenant.TenantId ?? Guid.Empty;
