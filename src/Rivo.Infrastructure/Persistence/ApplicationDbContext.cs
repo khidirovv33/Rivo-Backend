@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Rivo.Application.Common.Interfaces;
 using Rivo.Domain.Common;
 using Rivo.Domain.Entities.Audit;
+using Rivo.Domain.Entities.Barcodes;
 using Rivo.Domain.Entities.PurchaseOrders;
 using Rivo.Domain.Entities.Purchases;
 using Rivo.Domain.Entities.StockMovements;
@@ -54,6 +55,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Transfer> Transfers => Set<Transfer>();
 
     public DbSet<TransferItem> TransferItems => Set<TransferItem>();
+
+    public DbSet<Barcode> Barcodes => Set<Barcode>();
 
     /// <summary>Читается свежо при каждой компиляции запроса — DbContext per-request, значение не устаревает.</summary>
     private Guid CurrentTenantId => _currentTenant.TenantId ?? Guid.Empty;

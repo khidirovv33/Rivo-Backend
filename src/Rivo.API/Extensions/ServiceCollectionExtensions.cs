@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Rivo.Application.Audit.Interfaces;
 using Rivo.Application.Audit.Services;
+using Rivo.Application.Barcodes.Interfaces;
+using Rivo.Application.Barcodes.Services;
 using Rivo.Application.Common.Interfaces;
 using Rivo.Application.Purchases.Interfaces;
 using Rivo.Application.Purchases.Services;
@@ -24,6 +26,7 @@ using Rivo.Application.Transfers.Services;
 using Rivo.Application.Warehouses.Interfaces;
 using Rivo.Application.Warehouses.Services;
 using Rivo.Infrastructure.Common;
+using Rivo.Infrastructure.ExternalServices;
 using Rivo.Infrastructure.Identity;
 using Rivo.Infrastructure.Multitenancy;
 using Rivo.Infrastructure.Persistence;
@@ -55,6 +58,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IReceivingService, ReceivingService>();
         services.AddScoped<IPurchasesService, PurchasesService>();
         services.AddScoped<ITransfersService, TransfersService>();
+        services.AddScoped<IBarcodesService, BarcodesService>();
+        services.AddSingleton<IBarcodeValueGenerator, BarcodeGeneratorService>();
+        services.AddSingleton<IBarcodeImageRenderer, BarcodeGeneratorService>();
 
         var jwtSection = configuration.GetSection("Jwt");
         services.AddAuthentication(options =>
