@@ -7,6 +7,12 @@ using Microsoft.IdentityModel.Tokens;
 using Rivo.Application.Audit.Interfaces;
 using Rivo.Application.Audit.Services;
 using Rivo.Application.Common.Interfaces;
+using Rivo.Application.Stock.Interfaces;
+using Rivo.Application.Stock.Services;
+using Rivo.Application.StockMovements.Interfaces;
+using Rivo.Application.StockMovements.Services;
+using Rivo.Application.Warehouses.Interfaces;
+using Rivo.Application.Warehouses.Services;
 using Rivo.Infrastructure.Common;
 using Rivo.Infrastructure.Identity;
 using Rivo.Infrastructure.Multitenancy;
@@ -29,6 +35,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrentTenantService, TenantService>();
         services.AddSingleton<IDateTimeService, DateTimeService>();
         services.AddScoped<IAuditService, AuditService>();
+
+        // Dev2 — Inventory & Operations
+        services.AddScoped<IWarehousesService, WarehousesService>();
+        services.AddScoped<IStockService, StockService>();
+        services.AddScoped<IStockMovementsService, StockMovementsService>();
 
         var jwtSection = configuration.GetSection("Jwt");
         services.AddAuthentication(options =>

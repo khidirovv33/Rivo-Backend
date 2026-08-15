@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Rivo.Application.Common.Interfaces;
 using Rivo.Domain.Common;
 using Rivo.Domain.Entities.Audit;
+using Rivo.Domain.Entities.StockMovements;
+using Rivo.Domain.Entities.Warehouses;
+using StockEntity = Rivo.Domain.Entities.Stock.Stock;
 
 namespace Rivo.Infrastructure.Persistence;
 
@@ -21,6 +24,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     }
 
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
+    public DbSet<Warehouse> Warehouses => Set<Warehouse>();
+
+    public DbSet<StockEntity> Stocks => Set<StockEntity>();
+
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
