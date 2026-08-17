@@ -1,0 +1,55 @@
+using System.Net;
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Rivo.Application.Common.Models;
+using Rivo.Domain.Exceptions;
+
+namespace Rivo.API.Middlewares;
+
+public class ExceptionHandlingMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        catch (Exception ex)
+        {
+            await HandleExceptionAsync(context, ex);
+        }
+    }
+
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    {
+        var (statusCode, response) = exception switch
+        {
+            NotFoundException => (HttpStatusCode.NotFound, ApiResponse<object>.Fail(exception.Message)),
+            ValidationAppException validationEx => (HttpStatusCode.BadRequest,
+                ApiResponse<object>.Fail("Validation failed.", validationEx.Errors.SelectMany(e => e.Value))),
+            AuthenticationFailedException => (HttpStatusCode.Unauthorized, ApiResponse<object>.Fail(exception.Message)),
+            ForbiddenAccessException => (HttpStatusCode.Forbidden, ApiResponse<object>.Fail(exception.Message)),
+            TenantMismatchException => (HttpStatusCode.Forbidden, ApiResponse<object>.Fail(exception.Message)),
+            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, ApiResponse<object>.Fail(exception.Message)),
+            _ => (HttpStatusCode.InternalServerError, ApiResponse<object>.Fail("An unexpected error occurred."))
+        };
+
+        if (statusCode == HttpStatusCode.InternalServerError)
+        {
+            _logger.LogError(exception, "Unhandled exception processing {Method} {Path}", context.Request.Method, context.Request.Path);
+        }
+
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)statusCode;
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+    }
+}
