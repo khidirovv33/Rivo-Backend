@@ -33,7 +33,7 @@ public class StockMovement : BaseEntity, ITenantEntity, IAuditableEntity
 
     public Guid? ReferenceId { get; set; }
 
-    public Guid? CreatedByUserId { get; set; }
+    public Guid? CreatedBy { get; set; }
 
-    public Guid? UpdatedByUserId { get; set; }
+    public Guid? UpdatedBy { get; set; }
 }

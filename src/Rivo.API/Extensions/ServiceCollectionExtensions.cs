@@ -1,107 +1,65 @@
-using FluentValidation;
-using Mapster;
-using MapsterMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Rivo.Application.Audit.Interfaces;
-using Rivo.Application.Audit.Services;
-using Rivo.Application.Barcodes.Interfaces;
-using Rivo.Application.Barcodes.Services;
-using Rivo.Application.Common.Interfaces;
-using Rivo.Application.Inventories.Interfaces;
-using Rivo.Application.Inventories.Services;
-using Rivo.Application.InventoryItems.Interfaces;
-using Rivo.Application.InventoryItems.Services;
-using Rivo.Application.Purchases.Interfaces;
-using Rivo.Application.Purchases.Services;
-using Rivo.Application.PurchaseOrders.Interfaces;
-using Rivo.Application.PurchaseOrders.Services;
-using Rivo.Application.Receiving.Interfaces;
-using Rivo.Application.Receiving.Services;
-using Rivo.Application.Stock.Interfaces;
-using Rivo.Application.Stock.Services;
-using Rivo.Application.StockMovements.Interfaces;
-using Rivo.Application.StockMovements.Services;
-using Rivo.Application.Suppliers.Interfaces;
-using Rivo.Application.Suppliers.Services;
-using Rivo.Application.Transfers.Interfaces;
-using Rivo.Application.Transfers.Services;
-using Rivo.Application.Warehouses.Interfaces;
-using Rivo.Application.Warehouses.Services;
-using Rivo.Infrastructure.Common;
-using Rivo.Infrastructure.ExternalServices;
-using Rivo.Infrastructure.Identity;
-using Rivo.Infrastructure.Multitenancy;
-using Rivo.Infrastructure.Persistence;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Rivo.API.Filters;
+using Rivo.Infrastructure.Identity;
 
 namespace Rivo.API.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddRivoInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApiControllers(this IServiceCollection services)
     {
-        services.AddHttpContextAccessor();
-
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
-        services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
-
-        services.AddScoped<ICurrentUserService, CurrentUserService>();
-        services.AddScoped<ICurrentTenantService, TenantService>();
-        services.AddSingleton<IDateTimeService, DateTimeService>();
-        services.AddScoped<IAuditService, AuditService>();
-
-        // Dev2 — Inventory & Operations
-        services.AddScoped<IWarehousesService, WarehousesService>();
-        services.AddScoped<IStockService, StockService>();
-        services.AddScoped<IStockMovementsService, StockMovementsService>();
-        services.AddScoped<ISuppliersService, SuppliersService>();
-        services.AddScoped<IPurchaseOrdersService, PurchaseOrdersService>();
-        services.AddScoped<IReceivingService, ReceivingService>();
-        services.AddScoped<IPurchasesService, PurchasesService>();
-        services.AddScoped<ITransfersService, TransfersService>();
-        services.AddScoped<IBarcodesService, BarcodesService>();
-        services.AddSingleton<IBarcodeValueGenerator, BarcodeGeneratorService>();
-        services.AddSingleton<IBarcodeImageRenderer, BarcodeGeneratorService>();
-        services.AddScoped<IInventoriesService, InventoriesService>();
-        services.AddScoped<IInventoryItemsService, InventoryItemsService>();
-
-        var jwtSection = configuration.GetSection("Jwt");
-        services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtSection["Issuer"],
-                    ValidAudience = jwtSection["Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtSection["Key"] ?? string.Empty)),
-                };
-            });
-
-        services.AddAuthorization();
-
+        services.AddControllers(options => options.Filters.Add<ValidationActionFilter>());
         return services;
     }
 
-    public static IServiceCollection AddRivoApplication(this IServiceCollection services)
+    public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        var config = TypeAdapterConfig.GlobalSettings;
-        config.Scan(typeof(Rivo.Application.Common.Mappings.MappingProfile).Assembly);
-        services.AddSingleton(config);
-        services.AddScoped<IMapper, ServiceMapper>();
+        var jwtSettings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>() ?? new JwtSettings();
 
-        services.AddValidatorsFromAssembly(typeof(Rivo.Application.Common.Mappings.MappingProfile).Assembly);
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = jwtSettings.Issuer,
+                ValidateAudience = true,
+                ValidAudience = jwtSettings.Audience,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+                ClockSkew = TimeSpan.FromSeconds(30)
+            };
+        });
+
+        services.AddAuthorization();
+        return services;
+    }
+
+    public static IServiceCollection AddRivoCors(this IServiceCollection services, IConfiguration configuration)
+    {
+        var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy("RivoDefault", policy =>
+            {
+                if (allowedOrigins.Length > 0)
+                {
+                    policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                }
+                else
+                {
+                    policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+                }
+            });
+        });
 
         return services;
     }

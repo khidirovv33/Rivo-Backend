@@ -36,7 +36,7 @@ public class PurchaseOrdersService : IPurchaseOrdersService
         query = request.SortDescending ? query.OrderByDescending(x => x.OrderDate) : query.OrderBy(x => x.OrderDate);
 
         var mapped = query.Select(x => ToDto(x));
-        return await PaginatedList<PurchaseOrderDto>.CreateAsync(mapped, request.Page, request.PageSize, cancellationToken);
+        return await PaginatedList<PurchaseOrderDto>.CreateAsync(mapped, request.PageNumber, request.PageSize, cancellationToken);
     }
 
     public async Task<PurchaseOrderDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -58,7 +58,7 @@ public class PurchaseOrdersService : IPurchaseOrdersService
             OrderDate = DateTime.UtcNow,
             ExpectedDate = dto.ExpectedDate,
             Notes = dto.Notes,
-            CreatedByUserId = _currentUser.UserId,
+            CreatedBy = _currentUser.UserId,
             Items = dto.Items.Select(i => new PurchaseOrderItem
             {
                 ProductId = i.ProductId,
@@ -108,7 +108,7 @@ public class PurchaseOrdersService : IPurchaseOrdersService
     {
         var oldStatus = order.Status;
         order.Status = newStatus;
-        order.UpdatedByUserId = _currentUser.UserId;
+        order.UpdatedBy = _currentUser.UserId;
 
         await _context.SaveChangesAsync(cancellationToken);
         await _audit.LogAsync(

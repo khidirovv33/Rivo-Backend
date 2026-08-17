@@ -26,7 +26,7 @@ public class StockMovementDto
 
     public Guid? ReferenceId { get; set; }
 
-    public Guid? CreatedByUserId { get; set; }
+    public Guid? CreatedBy { get; set; }
 
     public DateTime CreatedAt { get; set; }
 }

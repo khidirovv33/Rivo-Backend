@@ -32,7 +32,7 @@ public class PurchasesService : IPurchasesService
         query = request.SortDescending ? query.OrderByDescending(x => x.PurchaseDate) : query.OrderBy(x => x.PurchaseDate);
 
         var mapped = query.Select(x => ToDto(x));
-        return await PaginatedList<PurchaseDto>.CreateAsync(mapped, request.Page, request.PageSize, cancellationToken);
+        return await PaginatedList<PurchaseDto>.CreateAsync(mapped, request.PageNumber, request.PageSize, cancellationToken);
     }
 
     public async Task<PurchaseDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

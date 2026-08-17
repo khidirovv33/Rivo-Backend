@@ -15,6 +15,8 @@ public class CurrentUserService : ICurrentUserService
 
     private ClaimsPrincipal? User => _httpContextAccessor.HttpContext?.User;
 
+    public bool IsAuthenticated => User?.Identity?.IsAuthenticated ?? false;
+
     public Guid? UserId
     {
         get
@@ -26,8 +28,7 @@ public class CurrentUserService : ICurrentUserService
 
     public string? Email => User?.FindFirstValue(ClaimTypes.Email);
 
-    public string? IpAddress => _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+    public string? RoleName => User?.FindFirstValue(ClaimTypes.Role);
 
-    public bool HasPermission(string permission) =>
-        User?.Claims.Any(c => c.Type == "permission" && c.Value == permission) ?? false;
+    public string? IpAddress => _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
 }

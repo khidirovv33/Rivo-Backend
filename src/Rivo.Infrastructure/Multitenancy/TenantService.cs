@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Rivo.Application.Common.Interfaces;
 
@@ -17,7 +16,7 @@ public class TenantService : ICurrentTenantService
     {
         get
         {
-            var value = _httpContextAccessor.HttpContext?.User.FindFirstValue("tenant_id");
+            var value = _httpContextAccessor.HttpContext?.User.FindFirst("tenant_id")?.Value;
             return Guid.TryParse(value, out var id) ? id : null;
         }
     }

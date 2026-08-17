@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Rivo.Application.Common.Models;
 using Rivo.Domain.Exceptions;
 
@@ -24,26 +25,27 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
-            await HandleAsync(context, ex);
+            await HandleExceptionAsync(context, ex);
         }
     }
 
-    private async Task HandleAsync(HttpContext context, Exception ex)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var (statusCode, response) = ex switch
+        var (statusCode, response) = exception switch
         {
+            NotFoundException => (HttpStatusCode.NotFound, ApiResponse<object>.Fail(exception.Message)),
             ValidationAppException validationEx => (HttpStatusCode.BadRequest,
-                ApiResponse<object>.Fail("Validation failed.", validationEx.Errors)),
-            NotFoundException => (HttpStatusCode.NotFound, ApiResponse<object>.Fail(ex.Message)),
-            ForbiddenAccessException => (HttpStatusCode.Forbidden, ApiResponse<object>.Fail(ex.Message)),
-            TenantMismatchException => (HttpStatusCode.Forbidden, ApiResponse<object>.Fail(ex.Message)),
-            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, ApiResponse<object>.Fail(ex.Message)),
-            _ => (HttpStatusCode.InternalServerError, ApiResponse<object>.Fail("An unexpected error occurred.")),
+                ApiResponse<object>.Fail("Validation failed.", validationEx.Errors.SelectMany(e => e.Value))),
+            AuthenticationFailedException => (HttpStatusCode.Unauthorized, ApiResponse<object>.Fail(exception.Message)),
+            ForbiddenAccessException => (HttpStatusCode.Forbidden, ApiResponse<object>.Fail(exception.Message)),
+            TenantMismatchException => (HttpStatusCode.Forbidden, ApiResponse<object>.Fail(exception.Message)),
+            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, ApiResponse<object>.Fail(exception.Message)),
+            _ => (HttpStatusCode.InternalServerError, ApiResponse<object>.Fail("An unexpected error occurred."))
         };
 
         if (statusCode == HttpStatusCode.InternalServerError)
         {
-            _logger.LogError(ex, "Unhandled exception");
+            _logger.LogError(exception, "Unhandled exception processing {Method} {Path}", context.Request.Method, context.Request.Path);
         }
 
         context.Response.ContentType = "application/json";

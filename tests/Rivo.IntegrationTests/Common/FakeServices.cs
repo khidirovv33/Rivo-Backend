@@ -13,9 +13,11 @@ public class FakeCurrentUserService : ICurrentUserService
 
     public string? Email => "tester@rivo.local";
 
+    public string? RoleName => "Owner";
+
     public string? IpAddress => "127.0.0.1";
 
-    public bool HasPermission(string permission) => true;
+    public bool IsAuthenticated => true;
 }
 
 public class FakeDateTimeService : IDateTimeService

@@ -6,6 +6,8 @@ public class WarehouseDto
 
     public Guid StoreId { get; set; }
 
+    public Guid? BranchId { get; set; }
+
     public string Name { get; set; } = null!;
 
     public string? Address { get; set; }
@@ -18,6 +20,8 @@ public class WarehouseDto
 public class CreateWarehouseDto
 {
     public Guid StoreId { get; set; }
+
+    public Guid? BranchId { get; set; }
 
     public string Name { get; set; } = null!;
 

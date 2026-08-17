@@ -35,7 +35,7 @@ public class StockService : IStockService
         }
 
         var mapped = query.OrderBy(x => x.CreatedAt).Select(x => ToDto(x));
-        return await PaginatedList<StockDto>.CreateAsync(mapped, request.Page, request.PageSize, cancellationToken);
+        return await PaginatedList<StockDto>.CreateAsync(mapped, request.PageNumber, request.PageSize, cancellationToken);
     }
 
     public async Task<StockDto> GetAsync(Guid warehouseId, Guid productId, Guid? productVariationId, CancellationToken cancellationToken = default)

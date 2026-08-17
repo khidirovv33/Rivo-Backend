@@ -24,9 +24,9 @@ public class SuppliersService : ISuppliersService
     {
         var query = _context.Suppliers.AsNoTracking().AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(request.Search))
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            query = query.Where(x => x.Name.Contains(request.Search));
+            query = query.Where(x => x.Name.Contains(request.SearchTerm));
         }
 
         query = request.SortDescending ? query.OrderByDescending(x => x.CreatedAt) : query.OrderBy(x => x.CreatedAt);
@@ -35,13 +35,13 @@ public class SuppliersService : ISuppliersService
         var debts = await GetDebtsAsync(supplierIds, cancellationToken);
 
         var mapped = query
-            .Skip((request.Page - 1) * request.PageSize)
+            .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
             .AsEnumerable()
             .Select(x => ToDto(x, debts.GetValueOrDefault(x.Id)))
             .ToList();
 
-        return new PaginatedList<SupplierDto>(mapped, supplierIds.Count, request.Page, request.PageSize);
+        return new PaginatedList<SupplierDto>(mapped, supplierIds.Count, request.PageNumber, request.PageSize);
     }
 
     public async Task<SupplierDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

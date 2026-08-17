@@ -18,9 +18,9 @@ public class Receiving : BaseEntity, ITenantEntity, IAuditableEntity
 
     public string? Notes { get; set; }
 
-    public Guid? CreatedByUserId { get; set; }
+    public Guid? CreatedBy { get; set; }
 
-    public Guid? UpdatedByUserId { get; set; }
+    public Guid? UpdatedBy { get; set; }
 
     public ICollection<ReceivingItem> Items { get; set; } = new List<ReceivingItem>();
 }

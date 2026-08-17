@@ -1,16 +1,16 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Rivo.Application.Common.Interfaces;
+using Rivo.Application.Common.Models;
+using Rivo.Application.Permissions.Interfaces;
 
 namespace Rivo.API.Filters;
 
 /// <summary>
-/// Проверка permission-claim'а (например "Inventory.Approve") поверх [Authorize].
-/// Контракт claim'а "permission" согласован с Dev1 (Auth/Roles/Permissions issues the JWT).
+/// Checks the caller's role against the live permission catalog (not baked into the JWT, so revoking a
+/// permission takes effect immediately instead of waiting for the token to expire). Usage: [PermissionAuthorize("Products.Create")].
 /// </summary>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
-public class PermissionAuthorizeAttribute : Attribute, IAsyncAuthorizationFilter
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+public class PermissionAuthorizeAttribute : Attribute, IAsyncActionFilter
 {
     private readonly string _permission;
 
@@ -19,18 +19,27 @@ public class PermissionAuthorizeAttribute : Attribute, IAsyncAuthorizationFilter
         _permission = permission;
     }
 
-    public Task OnAuthorizationAsync(AuthorizationFilterContext context)
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var currentUser = context.HttpContext.RequestServices.GetRequiredService<ICurrentUserService>();
-
-        if (!currentUser.HasPermission(_permission))
+        var roleIdClaim = context.HttpContext.User.FindFirst("role_id")?.Value;
+        if (!Guid.TryParse(roleIdClaim, out var roleId))
         {
-            context.Result = new ObjectResult(new { success = false, message = $"Missing permission: {_permission}" })
-            {
-                StatusCode = StatusCodes.Status403Forbidden,
-            };
+            context.Result = new ForbidResult();
+            return;
         }
 
-        return Task.CompletedTask;
+        var permissionsRepository = context.HttpContext.RequestServices.GetRequiredService<IPermissionsRepository>();
+        var permissions = await permissionsRepository.GetByRoleIdAsync(roleId, context.HttpContext.RequestAborted);
+
+        if (!permissions.Any(p => p.Name == _permission))
+        {
+            context.Result = new ObjectResult(ApiResponse<object>.Fail($"Missing permission: {_permission}"))
+            {
+                StatusCode = StatusCodes.Status403Forbidden
+            };
+            return;
+        }
+
+        await next();
     }
 }

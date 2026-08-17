@@ -45,7 +45,7 @@ public class InventoriesService : IInventoriesService
         query = request.SortDescending ? query.OrderByDescending(x => x.StartedAt) : query.OrderBy(x => x.StartedAt);
 
         var mapped = query.Select(x => ToDto(x));
-        return await PaginatedList<InventoryDto>.CreateAsync(mapped, request.Page, request.PageSize, cancellationToken);
+        return await PaginatedList<InventoryDto>.CreateAsync(mapped, request.PageNumber, request.PageSize, cancellationToken);
     }
 
     public async Task<InventoryDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -70,7 +70,7 @@ public class InventoriesService : IInventoriesService
             ResponsibleUserId = userId,
             StartedAt = DateTime.UtcNow,
             Notes = dto.Notes,
-            CreatedByUserId = userId,
+            CreatedBy = userId,
         };
 
         _context.Inventories.Add(inventory);
@@ -87,7 +87,7 @@ public class InventoriesService : IInventoriesService
 
         inventory.Status = InventoryStatus.Completed;
         inventory.CompletedAt = DateTime.UtcNow;
-        inventory.UpdatedByUserId = _currentUser.UserId;
+        inventory.UpdatedBy = _currentUser.UserId;
 
         await _context.SaveChangesAsync(cancellationToken);
         await _audit.LogAsync("Complete", nameof(Inventory), inventory.Id.ToString(), cancellationToken: cancellationToken);
@@ -118,7 +118,7 @@ public class InventoriesService : IInventoriesService
         inventory.Status = InventoryStatus.Approved;
         inventory.ApprovedAt = DateTime.UtcNow;
         inventory.ApprovedByUserId = _currentUser.UserId;
-        inventory.UpdatedByUserId = _currentUser.UserId;
+        inventory.UpdatedBy = _currentUser.UserId;
 
         await _context.SaveChangesAsync(cancellationToken);
         await _audit.LogAsync(
@@ -142,7 +142,7 @@ public class InventoriesService : IInventoriesService
         }
 
         inventory.Status = InventoryStatus.Cancelled;
-        inventory.UpdatedByUserId = _currentUser.UserId;
+        inventory.UpdatedBy = _currentUser.UserId;
 
         await _context.SaveChangesAsync(cancellationToken);
         await _audit.LogAsync("Cancel", nameof(Inventory), inventory.Id.ToString(), cancellationToken: cancellationToken);

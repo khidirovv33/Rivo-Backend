@@ -20,9 +20,9 @@ public class Transfer : BaseEntity, ITenantEntity, IAuditableEntity
 
     public string? Notes { get; set; }
 
-    public Guid? CreatedByUserId { get; set; }
+    public Guid? CreatedBy { get; set; }
 
-    public Guid? UpdatedByUserId { get; set; }
+    public Guid? UpdatedBy { get; set; }
 
     public ICollection<TransferItem> Items { get; set; } = new List<TransferItem>();
 }

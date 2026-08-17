@@ -9,12 +9,13 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
     public void Configure(EntityTypeBuilder<AuditLog> builder)
     {
         builder.ToTable("AuditLogs");
-
         builder.HasKey(x => x.Id);
-
-        builder.Property(x => x.Action).IsRequired().HasMaxLength(100);
+        builder.Property(x => x.Action).IsRequired().HasMaxLength(50);
         builder.Property(x => x.EntityName).IsRequired().HasMaxLength(200);
         builder.Property(x => x.EntityId).IsRequired().HasMaxLength(100);
         builder.Property(x => x.IpAddress).HasMaxLength(64);
+
+        builder.HasIndex(x => x.TenantId);
+        builder.HasIndex(x => new { x.EntityName, x.EntityId });
     }
 }

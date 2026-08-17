@@ -44,7 +44,7 @@ public class TransfersService : ITransfersService
         query = request.SortDescending ? query.OrderByDescending(x => x.TransferDate) : query.OrderBy(x => x.TransferDate);
 
         var mapped = query.Select(x => ToDto(x));
-        return await PaginatedList<TransferDto>.CreateAsync(mapped, request.Page, request.PageSize, cancellationToken);
+        return await PaginatedList<TransferDto>.CreateAsync(mapped, request.PageNumber, request.PageSize, cancellationToken);
     }
 
     public async Task<TransferDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -65,7 +65,7 @@ public class TransfersService : ITransfersService
             Status = TransferStatus.Draft,
             TransferDate = DateTime.UtcNow,
             Notes = dto.Notes,
-            CreatedByUserId = _currentUser.UserId,
+            CreatedBy = _currentUser.UserId,
             Items = dto.Items.Select(i => new TransferItem
             {
                 ProductId = i.ProductId,
@@ -159,7 +159,7 @@ public class TransfersService : ITransfersService
     {
         var oldStatus = transfer.Status;
         transfer.Status = newStatus;
-        transfer.UpdatedByUserId = _currentUser.UserId;
+        transfer.UpdatedBy = _currentUser.UserId;
 
         await _context.SaveChangesAsync(cancellationToken);
         await _audit.LogAsync(

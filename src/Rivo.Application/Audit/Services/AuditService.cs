@@ -34,12 +34,12 @@ public class AuditService : IAuditService
         var entry = new AuditLog
         {
             TenantId = _currentTenant.TenantId ?? Guid.Empty,
-            UserId = _currentUser.UserId ?? Guid.Empty,
+            UserId = _currentUser.UserId,
             Action = action,
             EntityName = entityName,
             EntityId = entityId,
-            OldValue = oldValue,
-            NewValue = newValue,
+            OldValues = oldValue,
+            NewValues = newValue,
             IpAddress = _currentUser.IpAddress,
             CreatedAt = _dateTime.UtcNow,
         };

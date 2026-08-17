@@ -1,9 +1,8 @@
 namespace Rivo.API.Middlewares;
 
 /// <summary>
-/// Требует TenantId в JWT-claim'ах аутентифицированного пользователя (кроме anonymous-эндпоинтов,
-/// например /api/auth/login). Реальное чтение tenant'а — в Infrastructure/Multitenancy/TenantService
-/// (ICurrentTenantService), это лишь guard, чтобы запрос без tenant_id не прошёл дальше.
+/// Defense in depth: an authenticated request without a tenant_id claim (malformed/legacy token) is rejected
+/// here, before it ever reaches a controller or the EF Core tenant query filter.
 /// </summary>
 public class TenantMiddleware
 {
@@ -16,16 +15,13 @@ public class TenantMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var endpoint = context.GetEndpoint();
-        var allowAnonymous = endpoint?.Metadata.GetMetadata<Microsoft.AspNetCore.Authorization.IAllowAnonymous>() != null;
-
-        if (!allowAnonymous && context.User.Identity?.IsAuthenticated == true)
+        if (context.User.Identity?.IsAuthenticated == true)
         {
-            var hasTenant = context.User.Claims.Any(c => c.Type == "tenant_id");
-            if (!hasTenant)
+            var tenantIdClaim = context.User.FindFirst("tenant_id")?.Value;
+            if (string.IsNullOrEmpty(tenantIdClaim) || !Guid.TryParse(tenantIdClaim, out _))
             {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                await context.Response.WriteAsync("Missing tenant context.");
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsJsonAsync(new { message = "Token is missing a valid tenant claim." });
                 return;
             }
         }

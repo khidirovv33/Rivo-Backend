@@ -24,9 +24,9 @@ public class WarehousesService : IWarehousesService
     {
         var query = _context.Warehouses.AsNoTracking().AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(request.Search))
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            query = query.Where(x => x.Name.Contains(request.Search));
+            query = query.Where(x => x.Name.Contains(request.SearchTerm));
         }
 
         query = request.SortBy?.ToLowerInvariant() switch
@@ -36,7 +36,7 @@ public class WarehousesService : IWarehousesService
         };
 
         var mapped = query.Select(x => ToDto(x));
-        return await PaginatedList<WarehouseDto>.CreateAsync(mapped, request.Page, request.PageSize, cancellationToken);
+        return await PaginatedList<WarehouseDto>.CreateAsync(mapped, request.PageNumber, request.PageSize, cancellationToken);
     }
 
     public async Task<WarehouseDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -50,6 +50,7 @@ public class WarehousesService : IWarehousesService
         var warehouse = new WarehouseEntity
         {
             StoreId = dto.StoreId,
+            BranchId = dto.BranchId,
             Name = dto.Name,
             Address = dto.Address,
             IsActive = true,
@@ -98,6 +99,7 @@ public class WarehousesService : IWarehousesService
     {
         Id = warehouse.Id,
         StoreId = warehouse.StoreId,
+        BranchId = warehouse.BranchId,
         Name = warehouse.Name,
         Address = warehouse.Address,
         IsActive = warehouse.IsActive,

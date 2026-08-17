@@ -46,7 +46,7 @@ public class ReceivingService : IReceivingService
         query = request.SortDescending ? query.OrderByDescending(x => x.ReceivingDate) : query.OrderBy(x => x.ReceivingDate);
 
         var mapped = query.Select(x => ToDto(x));
-        return await PaginatedList<ReceivingDto>.CreateAsync(mapped, request.Page, request.PageSize, cancellationToken);
+        return await PaginatedList<ReceivingDto>.CreateAsync(mapped, request.PageNumber, request.PageSize, cancellationToken);
     }
 
     public async Task<ReceivingDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -77,7 +77,7 @@ public class ReceivingService : IReceivingService
             ReceivingDate = DateTime.UtcNow,
             Status = ReceivingStatus.Draft,
             Notes = dto.Notes,
-            CreatedByUserId = _currentUser.UserId,
+            CreatedBy = _currentUser.UserId,
         };
 
         decimal totalCost = 0;

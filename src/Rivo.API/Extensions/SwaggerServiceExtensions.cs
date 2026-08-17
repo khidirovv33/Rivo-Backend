@@ -1,4 +1,4 @@
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 
 namespace Rivo.API.Extensions;
 
@@ -6,26 +6,29 @@ public static class SwaggerServiceExtensions
 {
     public static IServiceCollection AddRivoSwagger(this IServiceCollection services)
     {
-        services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>
         {
             options.SwaggerDoc("v1", new OpenApiInfo { Title = "Rivo API", Version = "v1" });
 
-            var jwtScheme = new OpenApiSecurityScheme
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Scheme = "bearer",
-                BearerFormat = "JWT",
                 Name = "Authorization",
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Type = SecuritySchemeType.Http,
-                Description = "Введите JWT токен в формате: Bearer {token}",
-            };
+                Description = "Enter: Bearer {your JWT token}"
+            });
 
-            options.AddSecurityDefinition("Bearer", jwtScheme);
-
-            options.AddSecurityRequirement(_ => new OpenApiSecurityRequirement
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
-                { new OpenApiSecuritySchemeReference("Bearer", null), new List<string>() },
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                    },
+                    Array.Empty<string>()
+                }
             });
         });
 

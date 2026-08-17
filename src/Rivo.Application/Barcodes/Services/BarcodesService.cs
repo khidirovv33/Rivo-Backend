@@ -34,7 +34,7 @@ public class BarcodesService : IBarcodesService
     {
         var query = _context.Barcodes.AsNoTracking().Where(x => x.ProductId == productId);
         var mapped = query.OrderByDescending(x => x.IsPrimary).Select(x => ToDto(x));
-        return await PaginatedList<BarcodeDto>.CreateAsync(mapped, request.Page, request.PageSize, cancellationToken);
+        return await PaginatedList<BarcodeDto>.CreateAsync(mapped, request.PageNumber, request.PageSize, cancellationToken);
     }
 
     public async Task<BarcodeDto> ScanAsync(string code, CancellationToken cancellationToken = default)

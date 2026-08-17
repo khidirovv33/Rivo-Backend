@@ -22,9 +22,9 @@ public class PurchaseOrder : BaseEntity, ITenantEntity, IAuditableEntity
 
     public string? Notes { get; set; }
 
-    public Guid? CreatedByUserId { get; set; }
+    public Guid? CreatedBy { get; set; }
 
-    public Guid? UpdatedByUserId { get; set; }
+    public Guid? UpdatedBy { get; set; }
 
     public ICollection<PurchaseOrderItem> Items { get; set; } = new List<PurchaseOrderItem>();
 }

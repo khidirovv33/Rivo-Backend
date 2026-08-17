@@ -40,7 +40,7 @@ public class StockMovementsService : IStockMovementsService
         }
 
         var mapped = query.OrderByDescending(x => x.CreatedAt).Select(x => ToDto(x));
-        return await PaginatedList<StockMovementDto>.CreateAsync(mapped, request.Page, request.PageSize, cancellationToken);
+        return await PaginatedList<StockMovementDto>.CreateAsync(mapped, request.PageNumber, request.PageSize, cancellationToken);
     }
 
     public async Task<StockMovementDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -100,7 +100,7 @@ public class StockMovementsService : IStockMovementsService
             Reason = dto.Reason,
             ReferenceType = dto.ReferenceType,
             ReferenceId = dto.ReferenceId,
-            CreatedByUserId = _currentUser.UserId,
+            CreatedBy = _currentUser.UserId,
         };
 
         _context.StockMovements.Add(movement);
@@ -130,7 +130,7 @@ public class StockMovementsService : IStockMovementsService
         Reason = movement.Reason,
         ReferenceType = movement.ReferenceType,
         ReferenceId = movement.ReferenceId,
-        CreatedByUserId = movement.CreatedByUserId,
+        CreatedBy = movement.CreatedBy,
         CreatedAt = movement.CreatedAt,
     };
 }
