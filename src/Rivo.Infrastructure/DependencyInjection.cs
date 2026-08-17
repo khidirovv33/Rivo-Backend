@@ -12,6 +12,7 @@ using Rivo.Application.Payments.Interfaces;
 using Rivo.Application.Permissions.Interfaces;
 using Rivo.Application.Products.Interfaces;
 using Rivo.Application.Returns.Interfaces;
+using Rivo.Application.Barcodes.Interfaces;
 using Rivo.Application.Roles.Interfaces;
 using Rivo.Application.Stores.Interfaces;
 using Rivo.Application.Tenancy.Interfaces;
@@ -63,9 +64,14 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPdfExportService, PdfExportService>();
 
-        // Dev2/Dev3 contract placeholders — see StockAdjustmentService/FinanceIntegrationService for the swap point.
-        services.AddScoped<IStockAdjustmentService, StockAdjustmentService>();
+        // Dev2's real IStockAdjustmentService (routes through IStockMovementsService) is registered in
+        // Rivo.Application.DependencyInjection — it lives in the Application layer, not here.
+        // Dev3 contract placeholder — see FinanceIntegrationService for the swap point.
         services.AddScoped<IFinanceIntegrationService, FinanceIntegrationService>();
+
+        // Dev2 — Inventory & Operations (Infrastructure-side implementations)
+        services.AddSingleton<IBarcodeValueGenerator, BarcodeGeneratorService>();
+        services.AddSingleton<IBarcodeImageRenderer, BarcodeGeneratorService>();
 
         services.AddScoped<IUsersRepository, UsersRepository>();
         services.AddScoped<IRolesRepository, RolesRepository>();

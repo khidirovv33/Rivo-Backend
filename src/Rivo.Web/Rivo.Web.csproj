@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Placeholder — назначение этого проекта не уточнено в ТЗ (см. ARCHITECTURE.md, "Открытые вопросы", п.1).
+    Не участвует в Dev2-модулях. Оставлен пустым classlib, чтобы Rivo.sln собирался целиком,
+    пока команда не решит: отдельный ASP.NET-хост, Blazor-фронтенд или не нужен вовсе.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Rivo.Web</RootNamespace>
+  </PropertyGroup>
+
+</Project>
