@@ -5,6 +5,7 @@ using Rivo.Application.Common.Interfaces;
 using Rivo.Application.Common.Models;
 using Rivo.Application.Expenses.Dtos;
 using Rivo.Application.Expenses.Interfaces;
+using Rivo.Application.Notifications.Interfaces;
 using Rivo.Domain.Entities.Expenses;
 using Rivo.Domain.Enums;
 using Rivo.Domain.Exceptions;
@@ -13,15 +14,22 @@ namespace Rivo.Application.Expenses.Services;
 
 public class ExpensesService : IExpensesService
 {
+    /// <summary>Порог "финансового события" (§16 ТЗ) для триггера уведомления о крупном расходе.</summary>
+    private const decimal LargeExpenseThreshold = 1000m;
+
     private readonly IApplicationDbContext _context;
     private readonly IAccountsService _accounts;
+    private readonly INotificationsService _notifications;
     private readonly ICurrentUserService _currentUser;
     private readonly IAuditService _audit;
 
-    public ExpensesService(IApplicationDbContext context, IAccountsService accounts, ICurrentUserService currentUser, IAuditService audit)
+    public ExpensesService(
+        IApplicationDbContext context, IAccountsService accounts, INotificationsService notifications,
+        ICurrentUserService currentUser, IAuditService audit)
     {
         _context = context;
         _accounts = accounts;
+        _notifications = notifications;
         _currentUser = currentUser;
         _audit = audit;
     }
@@ -76,6 +84,17 @@ public class ExpensesService : IExpensesService
             $"{dto.Category}: {dto.Description}", "Expense", expense.Id, cancellationToken);
 
         await _audit.LogAsync("Create", nameof(Expense), expense.Id.ToString(), newValue: dto.Amount.ToString(), cancellationToken: cancellationToken);
+
+        if (dto.Amount > LargeExpenseThreshold)
+        {
+            await _notifications.NotifyAsync(
+                NotificationType.FinanceEvent,
+                "Крупный расход",
+                $"{dto.Category}: {dto.Amount:0.00}. {dto.Description}",
+                referenceType: "Expense",
+                referenceId: expense.Id,
+                cancellationToken: cancellationToken);
+        }
 
         return ToDto(expense);
     }

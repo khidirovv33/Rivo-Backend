@@ -24,7 +24,7 @@ public class ReceivingIncreasesStockTests
         var audit = new AuditService(context, currentUser, new FakeCurrentTenantService(), new FakeDateTimeService());
         var stockMovements = new StockMovementsService(context, currentUser, audit);
         var purchaseOrders = new PurchaseOrdersService(context, currentUser, audit);
-        var receiving = new ReceivingService(context, stockMovements, currentUser, audit);
+        var receiving = new ReceivingService(context, stockMovements, new FakeNotificationsService(), currentUser, audit);
 
         var warehouse = new WarehouseEntity { StoreId = Guid.NewGuid(), Name = "Test Warehouse" };
         context.Warehouses.Add(warehouse);
@@ -66,7 +66,7 @@ public class ReceivingIncreasesStockTests
         var audit = new AuditService(context, currentUser, new FakeCurrentTenantService(), new FakeDateTimeService());
         var stockMovements = new StockMovementsService(context, currentUser, audit);
         var purchaseOrders = new PurchaseOrdersService(context, currentUser, audit);
-        var receiving = new ReceivingService(context, stockMovements, currentUser, audit);
+        var receiving = new ReceivingService(context, stockMovements, new FakeNotificationsService(), currentUser, audit);
 
         var warehouse = new WarehouseEntity { StoreId = Guid.NewGuid(), Name = "Test Warehouse" };
         context.Warehouses.Add(warehouse);

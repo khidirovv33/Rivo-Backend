@@ -31,6 +31,8 @@ using Rivo.Application.InventoryItems.Interfaces;
 using Rivo.Application.InventoryItems.Services;
 using Rivo.Application.Loyalty.Interfaces;
 using Rivo.Application.Loyalty.Services;
+using Rivo.Application.Notifications.Interfaces;
+using Rivo.Application.Notifications.Services;
 using Rivo.Application.Orders.Interfaces;
 using Rivo.Application.Orders.Services;
 using Rivo.Application.Payments.Interfaces;
@@ -117,6 +119,7 @@ public static class DependencyInjection
         services.AddScoped<IAnalyticsService, AnalyticsService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IReportsService, ReportsService>();
+        services.AddScoped<INotificationsService, NotificationsService>();
 
         // Real implementation of Dev1's contract (§12 ТЗ) — replaces the Infrastructure placeholder.
         services.AddScoped<IFinanceIntegrationService, Rivo.Application.Income.Services.FinanceIntegrationService>();

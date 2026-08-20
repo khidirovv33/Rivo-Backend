@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Rivo.Domain.Entities.Accounts;
 using Rivo.Domain.Entities.Audit;
 using Rivo.Domain.Entities.Expenses;
+using Rivo.Domain.Entities.Notifications;
 using Rivo.Domain.Entities.Orders;
 using Rivo.Domain.Entities.Products;
 using Rivo.Domain.Entities.PurchaseOrders;
@@ -85,6 +86,8 @@ public interface IApplicationDbContext
     DbSet<IncomeEntity> Incomes { get; }
 
     DbSet<Expense> Expenses { get; }
+
+    DbSet<Notification> Notifications { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

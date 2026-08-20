@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Rivo.Application.Audit.Interfaces;
 using Rivo.Application.Common.Interfaces;
 using Rivo.Application.Common.Models;
+using Rivo.Application.Notifications.Interfaces;
 using Rivo.Application.Receiving.Dtos;
 using Rivo.Application.Receiving.Interfaces;
 using Rivo.Application.StockMovements.Dtos;
@@ -18,17 +19,20 @@ public class ReceivingService : IReceivingService
 {
     private readonly IApplicationDbContext _context;
     private readonly IStockMovementsService _stockMovements;
+    private readonly INotificationsService _notifications;
     private readonly ICurrentUserService _currentUser;
     private readonly IAuditService _audit;
 
     public ReceivingService(
         IApplicationDbContext context,
         IStockMovementsService stockMovements,
+        INotificationsService notifications,
         ICurrentUserService currentUser,
         IAuditService audit)
     {
         _context = context;
         _stockMovements = stockMovements;
+        _notifications = notifications;
         _currentUser = currentUser;
         _audit = audit;
     }
@@ -151,6 +155,14 @@ public class ReceivingService : IReceivingService
 
         await _audit.LogAsync(
             "Create", nameof(ReceivingEntity), receiving.Id.ToString(), newValue: totalCost.ToString(), cancellationToken: cancellationToken);
+
+        await _notifications.NotifyAsync(
+            NotificationType.NewPurchase,
+            "Новая закупка",
+            $"Получен товар по заказу {order.OrderNumber} на сумму {totalCost:0.00}.",
+            referenceType: "Receiving",
+            referenceId: receiving.Id,
+            cancellationToken: cancellationToken);
 
         return ToDto(receiving);
     }

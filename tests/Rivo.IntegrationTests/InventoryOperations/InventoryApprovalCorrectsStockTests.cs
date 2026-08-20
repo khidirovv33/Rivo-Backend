@@ -24,7 +24,7 @@ public class InventoryApprovalCorrectsStockTests
         var currentUser = new FakeCurrentUserService();
         var audit = new AuditService(context, currentUser, new FakeCurrentTenantService(), new FakeDateTimeService());
         var stockMovements = new StockMovementsService(context, currentUser, audit);
-        var inventories = new InventoriesService(context, stockMovements, currentUser, audit);
+        var inventories = new InventoriesService(context, stockMovements, new FakeNotificationsService(), currentUser, audit);
         var inventoryItems = new InventoryItemsService(context);
 
         var warehouse = new WarehouseEntity { StoreId = Guid.NewGuid(), Name = "Test Warehouse" };
@@ -78,7 +78,7 @@ public class InventoryApprovalCorrectsStockTests
         var currentUser = new FakeCurrentUserService();
         var audit = new AuditService(context, currentUser, new FakeCurrentTenantService(), new FakeDateTimeService());
         var stockMovements = new StockMovementsService(context, currentUser, audit);
-        var inventories = new InventoriesService(context, stockMovements, currentUser, audit);
+        var inventories = new InventoriesService(context, stockMovements, new FakeNotificationsService(), currentUser, audit);
         var inventoryItems = new InventoryItemsService(context);
 
         var warehouseId = Guid.NewGuid();
