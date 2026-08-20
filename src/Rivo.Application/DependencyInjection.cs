@@ -1,7 +1,13 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Rivo.Application.Accounts.Interfaces;
+using Rivo.Application.Accounts.Services;
+using Rivo.Application.Analytics.Interfaces;
+using Rivo.Application.Analytics.Services;
 using Rivo.Application.Audit.Interfaces;
 using Rivo.Application.Audit.Services;
+using Rivo.Application.Dashboard.Interfaces;
+using Rivo.Application.Dashboard.Services;
 using Rivo.Application.Auth.Interfaces;
 using Rivo.Application.Auth.Services;
 using Rivo.Application.Barcodes.Interfaces;
@@ -13,12 +19,20 @@ using Rivo.Application.Categories.Services;
 using Rivo.Application.Common.Interfaces;
 using Rivo.Application.Customers.Interfaces;
 using Rivo.Application.Customers.Services;
+using Rivo.Application.Expenses.Interfaces;
+using Rivo.Application.Expenses.Services;
+using Rivo.Application.Finance.Interfaces;
+using Rivo.Application.Finance.Services;
+using Rivo.Application.Income.Interfaces;
+using Rivo.Application.Income.Services;
 using Rivo.Application.Inventories.Interfaces;
 using Rivo.Application.Inventories.Services;
 using Rivo.Application.InventoryItems.Interfaces;
 using Rivo.Application.InventoryItems.Services;
 using Rivo.Application.Loyalty.Interfaces;
 using Rivo.Application.Loyalty.Services;
+using Rivo.Application.Notifications.Interfaces;
+using Rivo.Application.Notifications.Services;
 using Rivo.Application.Orders.Interfaces;
 using Rivo.Application.Orders.Services;
 using Rivo.Application.Payments.Interfaces;
@@ -35,6 +49,8 @@ using Rivo.Application.Purchases.Interfaces;
 using Rivo.Application.Purchases.Services;
 using Rivo.Application.Receiving.Interfaces;
 using Rivo.Application.Receiving.Services;
+using Rivo.Application.Reports.Interfaces;
+using Rivo.Application.Reports.Services;
 using Rivo.Application.Returns.Interfaces;
 using Rivo.Application.Returns.Services;
 using Rivo.Application.Roles.Interfaces;
@@ -94,6 +110,19 @@ public static class DependencyInjection
 
         // Real implementation of Dev1's contract (§8 ТЗ) — replaces the Infrastructure placeholder.
         services.AddScoped<IStockAdjustmentService, StockAdjustmentService>();
+
+        // Dev3 — Finance & Intelligence
+        services.AddScoped<IAccountsService, AccountsService>();
+        services.AddScoped<IIncomeService, IncomeService>();
+        services.AddScoped<IExpensesService, ExpensesService>();
+        services.AddScoped<IFinanceService, FinanceService>();
+        services.AddScoped<IAnalyticsService, AnalyticsService>();
+        services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IReportsService, ReportsService>();
+        services.AddScoped<INotificationsService, NotificationsService>();
+
+        // Real implementation of Dev1's contract (§12 ТЗ) — replaces the Infrastructure placeholder.
+        services.AddScoped<IFinanceIntegrationService, Rivo.Application.Income.Services.FinanceIntegrationService>();
 
         return services;
     }

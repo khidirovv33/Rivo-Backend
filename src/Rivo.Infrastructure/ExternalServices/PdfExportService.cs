@@ -66,4 +66,59 @@ public class PdfExportService : IPdfExportService
 
         return document.GeneratePdf();
     }
+
+    public byte[] GenerateTableReportPdf(string title, IReadOnlyList<string> columns, IReadOnlyList<IReadOnlyList<string>> rows)
+    {
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4.Landscape());
+                page.Margin(24);
+                page.DefaultTextStyle(x => x.FontSize(9));
+
+                page.Header().Column(col =>
+                {
+                    col.Item().Text(title).FontSize(16).Bold();
+                    col.Item().Text($"{DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC");
+                });
+
+                page.Content().PaddingVertical(10).Table(table =>
+                {
+                    table.ColumnsDefinition(cols =>
+                    {
+                        foreach (var _ in columns)
+                        {
+                            cols.RelativeColumn();
+                        }
+                    });
+
+                    table.Header(header =>
+                    {
+                        foreach (var column in columns)
+                        {
+                            header.Cell().Text(column).Bold();
+                        }
+                    });
+
+                    foreach (var row in rows)
+                    {
+                        foreach (var cell in row)
+                        {
+                            table.Cell().Text(cell);
+                        }
+                    }
+                });
+
+                page.Footer().AlignCenter().Text(x =>
+                {
+                    x.CurrentPageNumber();
+                    x.Span(" / ");
+                    x.TotalPages();
+                });
+            });
+        });
+
+        return document.GeneratePdf();
+    }
 }

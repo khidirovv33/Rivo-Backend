@@ -5,6 +5,7 @@ using Rivo.Application.Common.Models;
 using Rivo.Application.Inventories.Dtos;
 using Rivo.Application.Inventories.Interfaces;
 using Rivo.Application.InventoryItems.Dtos;
+using Rivo.Application.Notifications.Interfaces;
 using Rivo.Application.StockMovements.Dtos;
 using Rivo.Application.StockMovements.Interfaces;
 using Rivo.Domain.Entities.Inventories;
@@ -15,19 +16,26 @@ namespace Rivo.Application.Inventories.Services;
 
 public class InventoriesService : IInventoriesService
 {
+    /// <summary>Порог "крупной недостачи" (§16 ТЗ) для триггера LargeShortage-уведомления. Не вынесено
+    /// в настройки tenant'а, т.к. Settings ещё не реализован ни одним из разработчиков.</summary>
+    private const decimal LargeShortageCostThreshold = 500m;
+
     private readonly IApplicationDbContext _context;
     private readonly IStockMovementsService _stockMovements;
+    private readonly INotificationsService _notifications;
     private readonly ICurrentUserService _currentUser;
     private readonly IAuditService _audit;
 
     public InventoriesService(
         IApplicationDbContext context,
         IStockMovementsService stockMovements,
+        INotificationsService notifications,
         ICurrentUserService currentUser,
         IAuditService audit)
     {
         _context = context;
         _stockMovements = stockMovements;
+        _notifications = notifications;
         _currentUser = currentUser;
         _audit = audit;
     }
@@ -121,10 +129,24 @@ public class InventoriesService : IInventoriesService
         inventory.UpdatedBy = _currentUser.UserId;
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        var shortageCost = inventory.Items.Where(i => i.Difference < 0).Sum(i => -i.DifferenceCost);
+
         await _audit.LogAsync(
             "Approve", nameof(Inventory), inventory.Id.ToString(),
             newValue: $"shortage={inventory.Items.Where(i => i.Difference < 0).Sum(i => -i.Difference)}, surplus={inventory.Items.Where(i => i.Difference > 0).Sum(i => i.Difference)}",
             cancellationToken: cancellationToken);
+
+        if (shortageCost > LargeShortageCostThreshold)
+        {
+            await _notifications.NotifyAsync(
+                NotificationType.LargeShortage,
+                "Крупная недостача",
+                $"Ревизия {inventory.InventoryNumber}: недостача на сумму {shortageCost:0.00}.",
+                referenceType: "Inventory",
+                referenceId: inventory.Id,
+                cancellationToken: cancellationToken);
+        }
 
         return ToDto(inventory);
     }

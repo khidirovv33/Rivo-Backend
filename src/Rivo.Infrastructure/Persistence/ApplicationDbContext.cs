@@ -3,12 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Rivo.Application.Common.Interfaces;
 using Rivo.Domain.Common;
+using Rivo.Domain.Entities.Accounts;
 using Rivo.Domain.Entities.Audit;
 using Rivo.Domain.Entities.Auth;
 using Rivo.Domain.Entities.Brands;
 using Rivo.Domain.Entities.Categories;
 using Rivo.Domain.Entities.Customers;
+using Rivo.Domain.Entities.Expenses;
 using Rivo.Domain.Entities.Loyalty;
+using Rivo.Domain.Entities.Notifications;
 using Rivo.Domain.Entities.Orders;
 using Rivo.Domain.Entities.Payments;
 using Rivo.Domain.Entities.Permissions;
@@ -25,6 +28,7 @@ using Rivo.Domain.Entities.Transfers;
 using Rivo.Domain.Entities.Users;
 using Rivo.Domain.Entities.Warehouses;
 using BarcodeEntity = Rivo.Domain.Entities.Barcodes.Barcode;
+using IncomeEntity = Rivo.Domain.Entities.Income.Income;
 using InventoryEntity = Rivo.Domain.Entities.Inventories.Inventory;
 using InventoryItemEntity = Rivo.Domain.Entities.InventoryItems.InventoryItem;
 using ReceivingEntity = Rivo.Domain.Entities.Receiving.Receiving;
@@ -106,16 +110,28 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<InventoryItemEntity> InventoryItems => Set<InventoryItemEntity>();
 
+    // Dev3 — Finance & Intelligence
+    public DbSet<Account> Accounts => Set<Account>();
+
+    public DbSet<AccountTransaction> AccountTransactions => Set<AccountTransaction>();
+
+    public DbSet<IncomeEntity> Incomes => Set<IncomeEntity>();
+
+    public DbSet<Expense> Expenses => Set<Expense>();
+
+    public DbSet<Notification> Notifications => Set<Notification>();
+
     /// <summary>Читается свежо при каждой компиляции запроса — DbContext per-request, значение не устаревает.</summary>
     private Guid CurrentTenantId => _currentTenantService.TenantId ?? Guid.Empty;
 
-    /// <summary>Dev2-сущности, для которых генерируется общий именованный tenant-фильтр (см. ApplyTenantQueryFilter).</summary>
-    private static readonly Type[] Dev2TenantEntityTypes =
+    /// <summary>Dev2/Dev3-сущности, для которых генерируется общий именованный tenant-фильтр (см. ApplyTenantQueryFilter).</summary>
+    private static readonly Type[] ReflectionTenantEntityTypes =
     [
         typeof(Warehouse), typeof(StockEntity), typeof(StockMovement), typeof(Supplier),
         typeof(PurchaseOrder), typeof(PurchaseOrderItem), typeof(ReceivingEntity), typeof(ReceivingItemEntity),
         typeof(Purchase), typeof(Transfer), typeof(TransferItem), typeof(BarcodeEntity),
         typeof(InventoryEntity), typeof(InventoryItemEntity),
+        typeof(Account), typeof(AccountTransaction), typeof(IncomeEntity), typeof(Expense), typeof(Notification),
     ];
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -142,7 +158,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         // Tenant isolation (Dev2 entities): named EF Core 10 query filter, combined via AND with any other
         // named filter already set on the same entity by its IEntityTypeConfiguration (e.g. "SoftDelete" on
         // Warehouse/Supplier, "ParentSoftDelete" on Stock/StockMovement) instead of overwriting it.
-        foreach (var clrType in Dev2TenantEntityTypes)
+        foreach (var clrType in ReflectionTenantEntityTypes)
         {
             var entityType = modelBuilder.Model.FindEntityType(clrType)!;
             modelBuilder.Entity(clrType).HasIndex(nameof(ITenantEntity.TenantId));
