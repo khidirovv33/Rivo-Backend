@@ -1,5 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Rivo.Application.Accounts.Interfaces;
+using Rivo.Application.Accounts.Services;
 using Rivo.Application.Audit.Interfaces;
 using Rivo.Application.Audit.Services;
 using Rivo.Application.Auth.Interfaces;
@@ -13,6 +15,12 @@ using Rivo.Application.Categories.Services;
 using Rivo.Application.Common.Interfaces;
 using Rivo.Application.Customers.Interfaces;
 using Rivo.Application.Customers.Services;
+using Rivo.Application.Expenses.Interfaces;
+using Rivo.Application.Expenses.Services;
+using Rivo.Application.Finance.Interfaces;
+using Rivo.Application.Finance.Services;
+using Rivo.Application.Income.Interfaces;
+using Rivo.Application.Income.Services;
 using Rivo.Application.Inventories.Interfaces;
 using Rivo.Application.Inventories.Services;
 using Rivo.Application.InventoryItems.Interfaces;
@@ -94,6 +102,15 @@ public static class DependencyInjection
 
         // Real implementation of Dev1's contract (§8 ТЗ) — replaces the Infrastructure placeholder.
         services.AddScoped<IStockAdjustmentService, StockAdjustmentService>();
+
+        // Dev3 — Finance & Intelligence
+        services.AddScoped<IAccountsService, AccountsService>();
+        services.AddScoped<IIncomeService, IncomeService>();
+        services.AddScoped<IExpensesService, ExpensesService>();
+        services.AddScoped<IFinanceService, FinanceService>();
+
+        // Real implementation of Dev1's contract (§12 ТЗ) — replaces the Infrastructure placeholder.
+        services.AddScoped<IFinanceIntegrationService, Rivo.Application.Income.Services.FinanceIntegrationService>();
 
         return services;
     }
