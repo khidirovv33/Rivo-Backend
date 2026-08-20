@@ -63,6 +63,8 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasherService, PasswordHasherService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPdfExportService, PdfExportService>();
+        services.AddScoped<ICsvExportService, CsvExportService>();
+        services.AddScoped<IExcelExportService, ExcelExportService>();
 
         // Dev2's real IStockAdjustmentService and Dev3's real IFinanceIntegrationService both live in
         // Rivo.Application.DependencyInjection now — not here (both implementations moved to the

@@ -47,6 +47,8 @@ using Rivo.Application.Purchases.Interfaces;
 using Rivo.Application.Purchases.Services;
 using Rivo.Application.Receiving.Interfaces;
 using Rivo.Application.Receiving.Services;
+using Rivo.Application.Reports.Interfaces;
+using Rivo.Application.Reports.Services;
 using Rivo.Application.Returns.Interfaces;
 using Rivo.Application.Returns.Services;
 using Rivo.Application.Roles.Interfaces;
@@ -114,6 +116,7 @@ public static class DependencyInjection
         services.AddScoped<IFinanceService, FinanceService>();
         services.AddScoped<IAnalyticsService, AnalyticsService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IReportsService, ReportsService>();
 
         // Real implementation of Dev1's contract (§12 ТЗ) — replaces the Infrastructure placeholder.
         services.AddScoped<IFinanceIntegrationService, Rivo.Application.Income.Services.FinanceIntegrationService>();
