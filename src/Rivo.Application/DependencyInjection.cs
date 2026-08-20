@@ -2,8 +2,12 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Rivo.Application.Accounts.Interfaces;
 using Rivo.Application.Accounts.Services;
+using Rivo.Application.Analytics.Interfaces;
+using Rivo.Application.Analytics.Services;
 using Rivo.Application.Audit.Interfaces;
 using Rivo.Application.Audit.Services;
+using Rivo.Application.Dashboard.Interfaces;
+using Rivo.Application.Dashboard.Services;
 using Rivo.Application.Auth.Interfaces;
 using Rivo.Application.Auth.Services;
 using Rivo.Application.Barcodes.Interfaces;
@@ -108,6 +112,8 @@ public static class DependencyInjection
         services.AddScoped<IIncomeService, IncomeService>();
         services.AddScoped<IExpensesService, ExpensesService>();
         services.AddScoped<IFinanceService, FinanceService>();
+        services.AddScoped<IAnalyticsService, AnalyticsService>();
+        services.AddScoped<IDashboardService, DashboardService>();
 
         // Real implementation of Dev1's contract (§12 ТЗ) — replaces the Infrastructure placeholder.
         services.AddScoped<IFinanceIntegrationService, Rivo.Application.Income.Services.FinanceIntegrationService>();
