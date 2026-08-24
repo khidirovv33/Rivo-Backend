@@ -21,3 +21,36 @@ public class DashboardOverviewDto
 
     public int LowStockCount { get; set; }
 }
+
+/// <summary>Сводка "сегодня + неделя" для главного экрана (Обзор) — отдельно от финансового DashboardOverviewDto.</summary>
+public class DashboardDto
+{
+    public decimal SalesToday { get; set; }
+    public decimal? SalesChangePercent { get; set; }
+
+    public int OrdersToday { get; set; }
+    public decimal? OrdersChangePercent { get; set; }
+
+    public decimal AverageCheckToday { get; set; }
+    public decimal? AverageCheckChangePercent { get; set; }
+
+    public int LowStockProductCount { get; set; }
+    public int LowStockWarehouseCount { get; set; }
+
+    public List<DailySalesPointDto> WeeklySales { get; set; } = new();
+    public List<TopProductDto> TopProducts { get; set; } = new();
+}
+
+public class DailySalesPointDto
+{
+    public DateOnly Date { get; set; }
+    public decimal Total { get; set; }
+}
+
+public class TopProductDto
+{
+    public Guid ProductId { get; set; }
+    public string ProductName { get; set; } = string.Empty;
+    public int QuantitySold { get; set; }
+    public decimal Revenue { get; set; }
+}

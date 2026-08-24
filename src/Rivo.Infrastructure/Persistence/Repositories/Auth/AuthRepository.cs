@@ -14,7 +14,7 @@ public class AuthRepository : IAuthRepository
     }
 
     public Task<RefreshToken?> GetRefreshTokenAsync(string token, CancellationToken cancellationToken = default) =>
-        _context.RefreshTokens.Include(rt => rt.User).ThenInclude(u => u.Role)
+        _context.RefreshTokens.IgnoreQueryFilters().Include(rt => rt.User).ThenInclude(u => u.Role)
             .FirstOrDefaultAsync(rt => rt.Token == token, cancellationToken);
 
     public async Task AddRefreshTokenAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default) =>

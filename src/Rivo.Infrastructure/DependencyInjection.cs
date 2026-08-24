@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Rivo.Application.Assistant.Interfaces;
 using Rivo.Application.Auth.Interfaces;
 using Rivo.Application.Brands.Interfaces;
 using Rivo.Application.Categories.Interfaces;
 using Rivo.Application.Common.Interfaces;
 using Rivo.Application.Customers.Interfaces;
+using Rivo.Application.Dashboard.Interfaces;
 using Rivo.Application.Loyalty.Interfaces;
 using Rivo.Application.Orders.Interfaces;
 using Rivo.Application.Payments.Interfaces;
@@ -27,6 +29,7 @@ using Rivo.Infrastructure.Persistence.Repositories.Auth;
 using Rivo.Infrastructure.Persistence.Repositories.Brands;
 using Rivo.Infrastructure.Persistence.Repositories.Categories;
 using Rivo.Infrastructure.Persistence.Repositories.Customers;
+using Rivo.Infrastructure.Persistence.Repositories.Dashboard;
 using Rivo.Infrastructure.Persistence.Repositories.Loyalty;
 using Rivo.Infrastructure.Persistence.Repositories.Orders;
 using Rivo.Infrastructure.Persistence.Repositories.Payments;
@@ -65,6 +68,15 @@ public static class DependencyInjection
         services.AddScoped<IPdfExportService, PdfExportService>();
         services.AddScoped<ICsvExportService, CsvExportService>();
         services.AddScoped<IExcelExportService, ExcelExportService>();
+        // "Assistant:Provider" = "Gemini" | "OpenAI" — переключение без правки кода (см. appsettings.json).
+        if (string.Equals(configuration["Assistant:Provider"], "Gemini", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddHttpClient<IAssistantService, GeminiAssistantService>();
+        }
+        else
+        {
+            services.AddHttpClient<IAssistantService, OpenAiAssistantService>();
+        }
 
         // Dev2's real IStockAdjustmentService and Dev3's real IFinanceIntegrationService both live in
         // Rivo.Application.DependencyInjection now — not here (both implementations moved to the
@@ -84,6 +96,7 @@ public static class DependencyInjection
         services.AddScoped<IBrandsRepository, BrandsRepository>();
         services.AddScoped<IProductsRepository, ProductsRepository>();
         services.AddScoped<ICustomersRepository, CustomersRepository>();
+        services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<ILoyaltyRepository, LoyaltyRepository>();
         services.AddScoped<IOrdersRepository, OrdersRepository>();
         services.AddScoped<IPaymentsRepository, PaymentsRepository>();

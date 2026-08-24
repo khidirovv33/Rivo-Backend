@@ -18,4 +18,9 @@ public abstract class ApiControllerBase : ControllerBase
         Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id)
             ? id
             : throw new UnauthorizedAccessException("Request is missing a valid user claim.");
+
+    protected Guid CurrentRoleId =>
+        Guid.TryParse(User.FindFirstValue("role_id"), out var id)
+            ? id
+            : throw new UnauthorizedAccessException("Request is missing a valid role claim.");
 }

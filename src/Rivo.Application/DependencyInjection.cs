@@ -4,6 +4,8 @@ using Rivo.Application.Accounts.Interfaces;
 using Rivo.Application.Accounts.Services;
 using Rivo.Application.Analytics.Interfaces;
 using Rivo.Application.Analytics.Services;
+using Rivo.Application.Assistant.Interfaces;
+using Rivo.Application.Assistant.Services;
 using Rivo.Application.Audit.Interfaces;
 using Rivo.Application.Audit.Services;
 using Rivo.Application.Dashboard.Interfaces;
@@ -93,6 +95,7 @@ public static class DependencyInjection
         services.AddScoped<IOrdersService, OrdersService>();
         services.AddScoped<IPaymentsService, PaymentsService>();
         services.AddScoped<IReturnsService, ReturnsService>();
+        services.AddScoped<IAssistantToolsService, AssistantToolsService>();
 
         // Dev2 — Inventory & Operations
         services.AddScoped<IAuditService, AuditService>();

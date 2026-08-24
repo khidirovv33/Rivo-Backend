@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Rivo.API.Binders;
 using Rivo.API.Filters;
 using Rivo.Infrastructure.Identity;
 
@@ -10,7 +11,11 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApiControllers(this IServiceCollection services)
     {
-        services.AddControllers(options => options.Filters.Add<ValidationActionFilter>());
+        services.AddControllers(options =>
+        {
+            options.Filters.Add<ValidationActionFilter>();
+            options.ModelBinderProviders.Insert(0, new UtcDateTimeModelBinderProvider());
+        });
         return services;
     }
 

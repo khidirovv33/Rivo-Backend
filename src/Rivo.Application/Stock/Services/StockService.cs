@@ -34,14 +34,25 @@ public class StockService : IStockService
             query = query.Where(x => x.ProductId == productId.Value);
         }
 
-        var mapped = query.OrderBy(x => x.CreatedAt).Select(x => ToDto(x));
+        var mapped = query.OrderBy(x => x.CreatedAt).Select(x => ToDto(
+            x,
+            _context.Warehouses.Where(w => w.Id == x.WarehouseId).Select(w => w.Name).FirstOrDefault() ?? string.Empty,
+            _context.Products.Where(p => p.Id == x.ProductId).Select(p => p.Name).FirstOrDefault() ?? string.Empty));
         return await PaginatedList<StockDto>.CreateAsync(mapped, request.PageNumber, request.PageSize, cancellationToken);
     }
 
     public async Task<StockDto> GetAsync(Guid warehouseId, Guid productId, Guid? productVariationId, CancellationToken cancellationToken = default)
     {
         var stock = await FindOrDefaultAsync(warehouseId, productId, productVariationId, cancellationToken);
-        return ToDto(stock ?? NewStock(warehouseId, productId, productVariationId));
+        var (warehouseName, productName) = await ResolveNamesAsync(warehouseId, productId, cancellationToken);
+        return ToDto(stock ?? NewStock(warehouseId, productId, productVariationId), warehouseName, productName);
+    }
+
+    private async Task<(string WarehouseName, string ProductName)> ResolveNamesAsync(Guid warehouseId, Guid productId, CancellationToken cancellationToken)
+    {
+        var warehouseName = await _context.Warehouses.Where(w => w.Id == warehouseId).Select(w => w.Name).FirstOrDefaultAsync(cancellationToken) ?? string.Empty;
+        var productName = await _context.Products.Where(p => p.Id == productId).Select(p => p.Name).FirstOrDefaultAsync(cancellationToken) ?? string.Empty;
+        return (warehouseName, productName);
     }
 
     public async Task<StockDto> ReserveAsync(ReserveStockDto dto, CancellationToken cancellationToken = default)
@@ -60,7 +71,8 @@ public class StockService : IStockService
         await _context.SaveChangesAsync(cancellationToken);
         await _audit.LogAsync("Reserve", nameof(StockEntity), stock.Id.ToString(), newValue: dto.Quantity.ToString(), cancellationToken: cancellationToken);
 
-        return ToDto(stock);
+        var (warehouseName, productName) = await ResolveNamesAsync(stock.WarehouseId, stock.ProductId, cancellationToken);
+        return ToDto(stock, warehouseName, productName);
     }
 
     public async Task<StockDto> ReleaseReservationAsync(ReserveStockDto dto, CancellationToken cancellationToken = default)
@@ -71,7 +83,8 @@ public class StockService : IStockService
         await _context.SaveChangesAsync(cancellationToken);
         await _audit.LogAsync("ReleaseReservation", nameof(StockEntity), stock.Id.ToString(), newValue: dto.Quantity.ToString(), cancellationToken: cancellationToken);
 
-        return ToDto(stock);
+        var (warehouseName, productName) = await ResolveNamesAsync(stock.WarehouseId, stock.ProductId, cancellationToken);
+        return ToDto(stock, warehouseName, productName);
     }
 
     private async Task<StockEntity> GetOrCreateAsync(Guid warehouseId, Guid productId, Guid? productVariationId, CancellationToken cancellationToken)
@@ -103,11 +116,13 @@ public class StockService : IStockService
         ReservedQuantity = 0,
     };
 
-    private static StockDto ToDto(StockEntity stock) => new()
+    private static StockDto ToDto(StockEntity stock, string warehouseName, string productName) => new()
     {
         Id = stock.Id,
         WarehouseId = stock.WarehouseId,
+        WarehouseName = warehouseName,
         ProductId = stock.ProductId,
+        ProductName = productName,
         ProductVariationId = stock.ProductVariationId,
         SystemQuantity = stock.SystemQuantity,
         ReservedQuantity = stock.ReservedQuantity,

@@ -23,6 +23,17 @@ public class RolesController : ApiControllerBase
         return Ok(ApiResponse<List<RoleDto>>.Ok(result));
     }
 
+    // Без PermissionAuthorize — любая авторизованная роль должна узнать свои же права,
+    // чтобы фронт мог решить, что показывать (usePermissions()). Roles.Read защищает
+    // управление ролями, а не самоинспекцию: Cashier/Manager/Warehouse Worker без Roles.Read
+    // всё равно должны получить свой набор permissions через этот эндпоинт.
+    [HttpGet("me")]
+    public async Task<ActionResult<ApiResponse<RoleDto>>> GetMyRole(CancellationToken cancellationToken)
+    {
+        var result = await _rolesService.GetByIdAsync(TenantId, CurrentRoleId, cancellationToken);
+        return Ok(ApiResponse<RoleDto>.Ok(result));
+    }
+
     [PermissionAuthorize("Roles.Read")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ApiResponse<RoleDto>>> GetById(Guid id, CancellationToken cancellationToken)
