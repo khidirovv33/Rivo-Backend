@@ -96,6 +96,7 @@ public static class DependencyInjection
         services.AddScoped<IPaymentsService, PaymentsService>();
         services.AddScoped<IReturnsService, ReturnsService>();
         services.AddScoped<IAssistantToolsService, AssistantToolsService>();
+        services.AddScoped<IVoiceAssistantService, VoiceAssistantService>();
 
         // Dev2 — Inventory & Operations
         services.AddScoped<IAuditService, AuditService>();

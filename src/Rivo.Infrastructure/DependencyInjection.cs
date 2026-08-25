@@ -78,6 +78,11 @@ public static class DependencyInjection
             services.AddHttpClient<IAssistantService, OpenAiAssistantService>();
         }
 
+        // Voice (STT/TTS) always goes through OpenAI's Whisper/TTS endpoints regardless of which
+        // provider handles the text chat above — recognizing speech isn't tied to that choice.
+        services.AddHttpClient<IVoiceTranscriptionService, OpenAiVoiceTranscriptionService>();
+        services.AddHttpClient<IVoiceSynthesisService, OpenAiVoiceSynthesisService>();
+
         // Dev2's real IStockAdjustmentService and Dev3's real IFinanceIntegrationService both live in
         // Rivo.Application.DependencyInjection now — not here (both implementations moved to the
         // Application layer once the real Warehouse/Finance modules landed).
