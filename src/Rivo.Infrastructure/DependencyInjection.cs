@@ -78,9 +78,19 @@ public static class DependencyInjection
             services.AddHttpClient<IAssistantService, OpenAiAssistantService>();
         }
 
-        // Voice (STT/TTS) always goes through OpenAI's Whisper/TTS endpoints regardless of which
-        // provider handles the text chat above — recognizing speech isn't tied to that choice.
-        services.AddHttpClient<IVoiceTranscriptionService, OpenAiVoiceTranscriptionService>();
+        // Voice-in (STT) follows the same provider switch as the text chat above, so speech-to-text works
+        // out of the box on Gemini's free tier without requiring a paid OpenAI key. Voice-out (TTS) has no
+        // free Gemini equivalent wired up yet, so it stays OpenAI-only — it degrades gracefully to a
+        // text-only reply when OpenAI:ApiKey isn't configured (see VoiceAssistantService).
+        if (string.Equals(configuration["Assistant:Provider"], "Gemini", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddHttpClient<IVoiceTranscriptionService, GeminiVoiceTranscriptionService>();
+        }
+        else
+        {
+            services.AddHttpClient<IVoiceTranscriptionService, OpenAiVoiceTranscriptionService>();
+        }
+
         services.AddHttpClient<IVoiceSynthesisService, OpenAiVoiceSynthesisService>();
 
         // Dev2's real IStockAdjustmentService and Dev3's real IFinanceIntegrationService both live in
