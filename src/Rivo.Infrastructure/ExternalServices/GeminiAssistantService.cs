@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
@@ -18,14 +19,23 @@ namespace Rivo.Infrastructure.ExternalServices;
 /// </summary>
 public class GeminiAssistantService : IAssistantService
 {
-    private const string SystemPrompt =
+    private const string SystemPromptBase =
         "Ты — встроенный AI-помощник в системе Rivo (SaaS POS/ERP для розничной торговли: касса, склад, " +
         "закупки, финансы, клиенты, сотрудники). Помогай сотруднику магазина (владельцу, менеджеру, кассиру, " +
         "бухгалтеру) быстро разобраться с интерфейсом и рабочими вопросами. У тебя есть инструменты для " +
         "выполнения реальных действий в системе — если пользователь просит что-то сделать (например, " +
         "добавить сотрудника или начать ревизию), а подходящий инструмент доступен, вызови его вместо того, " +
         "чтобы просто объяснять, как это сделать вручную. Если для вызова не хватает данных — сначала " +
-        "уточни их у пользователя. Отвечай на русском языке, кратко и по делу, без лишних вступлений.";
+        "уточни их у пользователя. Отвечай кратко и по делу, без лишних вступлений.";
+
+    // Язык ответа подстраивается под культуру текущего запроса (Accept-Language, см. RequestLocalization
+    // в Program.cs) — тот же язык, что выбран переключателем языка на фронте.
+    private static string SystemPrompt => SystemPromptBase + CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
+    {
+        "en" => " Respond in English.",
+        "tg" => " Ҷавобро бо забони тоҷикӣ деҳ.",
+        _ => " Отвечай на русском языке.",
+    };
 
     private const int MaxToolRounds = 4;
 
