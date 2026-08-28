@@ -1,6 +1,8 @@
 using System.Net;
 using System.Text.Json;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Rivo.API.Resources;
 using Rivo.Application.Common.Models;
 using Rivo.Domain.Exceptions;
 
@@ -10,11 +12,13 @@ public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IStringLocalizer<SharedResources> localizer)
     {
         _next = next;
         _logger = logger;
+        _localizer = localizer;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -35,12 +39,12 @@ public class ExceptionHandlingMiddleware
         {
             NotFoundException => (HttpStatusCode.NotFound, ApiResponse<object>.Fail(exception.Message)),
             ValidationAppException validationEx => (HttpStatusCode.BadRequest,
-                ApiResponse<object>.Fail("Validation failed.", validationEx.Errors.SelectMany(e => e.Value))),
+                ApiResponse<object>.Fail(_localizer["ValidationFailed"], validationEx.Errors.SelectMany(e => e.Value))),
             AuthenticationFailedException => (HttpStatusCode.Unauthorized, ApiResponse<object>.Fail(exception.Message)),
             ForbiddenAccessException => (HttpStatusCode.Forbidden, ApiResponse<object>.Fail(exception.Message)),
             TenantMismatchException => (HttpStatusCode.Forbidden, ApiResponse<object>.Fail(exception.Message)),
-            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, ApiResponse<object>.Fail(exception.Message)),
-            _ => (HttpStatusCode.InternalServerError, ApiResponse<object>.Fail("An unexpected error occurred."))
+            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, ApiResponse<object>.Fail(_localizer["Unauthorized"])),
+            _ => (HttpStatusCode.InternalServerError, ApiResponse<object>.Fail(_localizer["UnexpectedError"]))
         };
 
         if (statusCode == HttpStatusCode.InternalServerError)

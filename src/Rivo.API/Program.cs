@@ -1,3 +1,5 @@
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 using Rivo.API.Extensions;
@@ -24,8 +26,19 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddRivoCors(builder.Configuration);
 builder.Services.AddRivoSwagger();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 var app = builder.Build();
+
+// ru/en/tg — выбирается по заголовку Accept-Language (фронт синхронизирует его с переключателем языка
+// в интерфейсе); ru остаётся культурой по умолчанию, т.к. это исходный язык большей части текстов.
+var supportedCultures = new[] { "ru", "en", "tg" }.Select(c => new CultureInfo(c)).ToList();
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("ru"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures,
+});
 
 using (var scope = app.Services.CreateScope())
 {
